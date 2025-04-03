@@ -10,7 +10,7 @@ class ProductController extends Controller
     public function index()
     {
         $products = Product::all();
-        return view('products.create', compact('products'));
+        return view('inventory', compact('products'));
     }
 
     public function store(Request $request)
@@ -35,6 +35,40 @@ class ProductController extends Controller
         $product->total_quantity = $request->total_quantity;
         $product->save();
 
-        return redirect()->route('product.index')->with('success', 'Product added successfully');
+        
+        return redirect()->route('inventory.index')->with('success', 'Product added successfully');
+    }
+
+    public function show(Product $product)
+    {
+        $product->load('lots'); 
+    return view('products.show', compact('product'));
+    }
+
+    public function edit(Product $product)
+{
+    return view('products.edit', compact('product'));
+}
+
+public function update(Request $request, Product $product)
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'low_stock_threshold' => 'required|integer|min:0',
+        'dosage' => 'nullable|string',
+        'dosage_unit' => 'nullable|string',
+        'remboursable' => 'required|boolean',
+    ]);
+
+    $product->update($validated);
+
+    return redirect()->route('product.show', $product->id)->with('success', 'Product updated successfully.');
+}
+
+    public function destroy(Product $product)
+    {
+        $product->delete(); // Delete the product from the database
+        return redirect()->route('inventory.index')->with('success', 'Product deleted successfully');
     }
 }

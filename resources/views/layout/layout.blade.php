@@ -15,11 +15,20 @@
             @vite(['resources/css/app.css', 'resources/js/app.js'])
         @endif
     </head>
+
+
 <body class="flex">
-    @include('layout.sidebar')
-    <main class="grid col-span-2">
-        @yield('content')
-        <script src="{{ asset('js/app.js') }}"></script>
+
+        @include('layout.sidebar')
+    <main class="w-full h-full">
+        @include('shared.message')
+            @yield('content')
+            <script src="{{ asset('js/app.js') }}"></script>
     </main>
+   
+
+    
+    
+  
 </body>
 </html>
