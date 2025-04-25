@@ -26,6 +26,7 @@ return new class extends Migration
             $table->integer('quantity');
             $table->decimal('original_price', 10, 2);
             $table->decimal('final_price', 10, 2);
+           
             $table->boolean('insurance_covered')->default(false);
             $table->timestamps();
         });

@@ -19,6 +19,7 @@ return new class extends Migration
             $table->text('description')->nullable(); 
             $table->boolean('remboursable')->default(false); 
             $table->integer('low_stock_threshold')->default(0);
+            $table->boolean('prescription')->default(false);
             $table->integer('total_quantity')->default(0); 
             $table->timestamps();
         });

@@ -6,6 +6,7 @@ use App\Services\BatchNumberService;
 use Illuminate\Http\Request;
 use App\Models\Lot;
 use App\Models\Product;
+use App\Models\ActivityLog;
 
 class LotController extends Controller
 {
@@ -49,11 +50,15 @@ class LotController extends Controller
             'expiration_date' => $request->expiration_date,
         ]);
 
-        // Update the product's total quantity
+     
         $product = Product::findOrFail($request->product_id);
         $product->total_quantity += $request->quantity;
         $product->save();
-
+        // Log the activity
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => auth()->user()->name . ' created a lot for: ' . $product->name,
+        ]); 
         return redirect()->route("lot.index", $request->product_id)->with('success', 'Lot added successfully.');
     }
 
@@ -76,7 +81,10 @@ class LotController extends Controller
             'expiration_date' => 'required|date',
             'price' => 'required|numeric|min:0',
         ]);
-
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => auth()->user()->name . ' edited a lot for: ' . $product->name,
+        ]);
         $lot->update($validated);
 
         return redirect()->route('product.show', $lot->product_id)->with('success', 'Lot updated successfully.');
@@ -88,6 +96,14 @@ class LotController extends Controller
     public function destroy(Lot $lot)
     {
         $productId = $lot->product_id; // Save the product ID for redirection
+
+        $product = $lot->product; 
+        $product->total_quantity -= $lot->quantity; 
+
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => auth()->user()->name . ' deleted a lot for: ' . $product->name,
+        ]);
         $lot->delete(); // Delete the lot
 
         return redirect()->route('product.show', $productId)->with('success', 'Lot deleted successfully.');

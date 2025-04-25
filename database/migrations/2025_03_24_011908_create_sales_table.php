@@ -13,13 +13,17 @@ return new class extends Migration
     {
         Schema::create('sales', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('sale_session_id')->nullable();
+            $table->unsignedBigInteger('prescription_id')->nullable(); // Add prescription_id column
             $table->enum('type', ['normal', 'insurance'])->default('normal');
-            $table->enum('coverage_type', ['full', 'partial'])->nullable();
-            $table->string('shifa_card_number')->nullable();
+            $table->enum('status', ['pending', 'completed', 'cancelled'])->default('pending'); 
             $table->decimal('total_amount', 10, 2);
             $table->decimal('covered_amount', 10, 2)->default(0);
             $table->decimal('patient_pays', 10, 2);
             $table->timestamps();
+
+            $table->foreign('sale_session_id')->references('id')->on('sale_sessions')->onDelete('cascade');
+            $table->foreign('prescription_id')->references('id')->on('prescriptions')->onDelete('set null'); // Add foreign key constraint
         });
     }
 

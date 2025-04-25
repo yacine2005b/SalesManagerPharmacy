@@ -13,6 +13,7 @@ class Product extends Model
         'dosage',
         'dosage_unit',
         'remboursable',
+        'prescription',
         'total_quantity',
     ];
 

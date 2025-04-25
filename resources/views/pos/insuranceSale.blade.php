@@ -8,10 +8,10 @@
 
     <div class="grid grid-cols-3 gap-6">
         <!-- Product List -->
-        @include('sales.listProducts', ['isInsuranceSale' => $isInsuranceSale])
+        @include('pos.listProducts', ['isInsuranceSale' => $isInsuranceSale])
 
         <!-- Cart -->
-        @include('sales.checkout', ['isInsuranceSale' => $isInsuranceSale])
+        @include('pos.checkout', ['isInsuranceSale' => $isInsuranceSale])
     </div>
 </div>
 @endsection

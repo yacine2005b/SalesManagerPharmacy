@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained()->onDelete('cascade'); 
             $table->string('batch_number'); 
             $table->integer('quantity');
+           
             $table->decimal('price', 10, 2);
             $table->date('expiration_date'); 
             $table->timestamps();

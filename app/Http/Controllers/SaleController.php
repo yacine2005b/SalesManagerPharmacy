@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
+use App\Models\ActivityLog;
+
+use App\Models\SaleSession;
 use App\Models\Lot;
  
 class SaleController extends Controller
@@ -14,22 +17,27 @@ class SaleController extends Controller
 
     public function index()
     {
-        // Fetch all sales with their associated sale items, products, and lots
-        $sales = Sale::with(['saleItems.product', 'saleItems.lot'])->get();
-
-        return view('salesHistory', compact('sales'));
+        // Fetch all sale sessions with their associated user
+        $saleSessions = SaleSession::with('user')->latest()->get();
+    
+        return view('salesHistory', compact('saleSessions'));
     }
-    public function show(Sale $sale)
+    
+    public function show(SaleSession $saleSession)
     {
-        // Eager load sale items with their associated products and lots
-        $sale->load(['saleItems.product', 'saleItems.lot']);
-
-        return view('sales.details', compact('sale'));
+        // Fetch all sales associated with the given session
+        $sales = $saleSession->sales()->with('saleItems')->get();
+    
+        return view('sales.details', compact('saleSession', 'sales'));
     }
     public function destroy(Sale $sale)
     {
         $sale->delete();
-
+        
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => auth()->user()->name . ' deleted a sale with amount of: ' . $sale->total_amount,
+        ]); 
         return redirect()->route('sales.history')->with('success', 'Sale deleted successfully.');
     }
    
