@@ -68,7 +68,7 @@ class CartController extends Controller
             return redirect()->route('insurance.sale')->with('success', 'Product added to cart.');
         }
 
-        return redirect()->route('pos.index')->with('success', 'Product added to cart.');
+        return redirect()->route('pos.normal')->with('success', 'Product added to cart.');
     }
 
     public function updateCart(Request $request)
@@ -101,7 +101,7 @@ class CartController extends Controller
 
         // Redirect based on the sale type
         if ($isInsuranceSale) {
-            return redirect()->route('insurance.sale')->with('success', 'Cart updated successfully.');
+            return redirect()->route('pos.insurance')->with('success', 'Cart updated successfully.');
         }
 
         return redirect()->route('pos.index')->with('success', 'Cart updated successfully.');
@@ -135,16 +135,36 @@ class CartController extends Controller
 
     public function saveInsuranceData(Request $request)
     {
-        $coverageType = $request->input('coverage_type');
-        $shifaCardNumber = $request->input('shifa_card_number');
-
         // Save insurance data in the session
         session([
-            'coverage_type' => $coverageType,
-            'shifa_card_number' => $shifaCardNumber,
+            'coverage_type' => $request->input('coverage_type'),
+            'shifa_card_number' => $request->input('shifa_card_number'),
         ]);
 
-        return redirect()->back()->with('success', 'Insurance data saved successfully.');
+        // Recalculate discounts for all items in the cart
+        $cart = session('cart', []);
+        $coverageType = session('coverage_type', null);
+        $isInsuranceSale = true; // Assume insurance sale is active
+
+        foreach ($cart as &$item) {
+            $product = Product::find($item['product_id']);
+            $discount = 0;
+
+            if ($product && $product->remboursable && $isInsuranceSale) {
+                if ($coverageType === 'full') {
+                    $discount = $item['price'] * $item['quantity']; // Full coverage means 100% discount
+                } elseif ($coverageType === 'partial') {
+                    $discount = ($item['price'] * $item['quantity']) * 0.5; // Partial coverage means 50% discount
+                }
+            }
+
+            $item['discount'] = $discount; // Update the discount in the cart
+        }
+
+        // Save the updated cart back to the session
+        session(['cart' => $cart]);
+
+        return redirect()->back()->with('success', 'Insurance details and discounts updated successfully!');
     }
 
     public function switchSaleType(Request $request)
@@ -178,8 +198,32 @@ class CartController extends Controller
         }
 
         // Save the updated cart back to the session
-        session(['cart' => $cart]);
+        
 
         return redirect()->back()->with('success', 'Sale type updated successfully.');
+    }
+    public function recalculateDiscounts()
+    {
+        $cart = session('cart', []);
+        $coverageType = session('coverage_type', null);
+        $isInsuranceSale = session('is_insurance', false);
+
+        foreach ($cart as &$item) {
+            $product = Product::find($item['product_id']);
+            $discount = 0;
+
+            if ($product && $product->remboursable && $isInsuranceSale) {
+                if ($coverageType === 'full') {
+                    $discount = $item['price'] * $item['quantity']; // Full coverage means 100% discount
+                } elseif ($coverageType === 'partial') {
+                    $discount = ($item['price'] * $item['quantity']) * 0.5; // Partial coverage means 50% discount
+                }
+            }
+
+            $item['discount'] = $discount; // Update the discount in the cart
+        }
+
+        // Save the updated cart back to the session
+        session(['cart' => $cart]);
     }
 }

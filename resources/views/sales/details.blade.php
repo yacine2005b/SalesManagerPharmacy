@@ -151,7 +151,7 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <a href="/" class="text-blue-600 hover:text-blue-900">
+                                <a href="{{route("sale.show",$sale->id)}}" class="text-blue-600 hover:text-blue-900">
                                     View
                                 </a>
                             </td>

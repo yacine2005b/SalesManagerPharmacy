@@ -16,7 +16,10 @@
     </head>
 
     <body class="flex min-h-screen bg-gray-50">
-        @include('layout.sidebar')
+     
+            @include('layout.sidebar')
+      
+       
         
         <main class="flex-1 overflow-x-hidden overflow-y-auto">
             @auth

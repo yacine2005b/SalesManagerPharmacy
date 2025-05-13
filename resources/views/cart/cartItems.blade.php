@@ -20,7 +20,7 @@
                         @if($item['discount'] ?? 0 > 0)
                             <span class="text-green-600">-{{ number_format($item['discount'], 2) }}DA</span>
                         @endif
-                        <span>{{ $item['is_reimbursable'] ? 'Remboursable' : 'Not remboursable' }}</span>
+                        <span>{{ $item['is_reimbursable'] ?? false ? 'Remboursable' : 'Not remboursable' }}</span>
                     @endif
                 </div>
                 

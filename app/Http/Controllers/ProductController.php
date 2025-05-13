@@ -21,6 +21,7 @@ class ProductController extends Controller
             'description' => 'required|string',
             'low_stock_threshold' => 'required|integer|min:0',
             'dosage' => 'required|numeric|min:0',
+            'prescription'=> 'boolean',
             'dosage_unit' => 'required|string|in:mg,ml,g,kg,L,IU,mcg,mg/mL,g/mL',
             'remboursable' => 'boolean',
             'total_quantity' => 'required|integer|min:0',
@@ -34,6 +35,7 @@ class ProductController extends Controller
         $product->dosage_unit = $request->dosage_unit;
         $product->remboursable = $request->has('remboursable');
         $product->total_quantity = $request->total_quantity;
+        $product->prescription = $request->has('prescription');
         $product->save();
 
         // Log the activity

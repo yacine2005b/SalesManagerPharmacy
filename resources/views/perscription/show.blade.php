@@ -25,15 +25,15 @@
             <table class="table-auto w-full border-collapse border border-gray-300">
                 <thead>
                     <tr class="bg-gray-100">
-                        <th class="border border-gray-300 px-4 py-2 text-left">#</th>
+                    
                         <th class="border border-gray-300 px-4 py-2 text-left">Product Name</th>
                         <th class="border border-gray-300 px-4 py-2 text-left">Quantity</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($prescription->medications as $index => $medication)
+                    @foreach($prescription->medications as $medication)
                         <tr>
-                            <td class="border border-gray-300 px-4 py-2">{{ $index + 1 }}</td>
+                         
                             <td class="border border-gray-300 px-4 py-2">{{ $medication->product->name }}</td>
                             <td class="border border-gray-300 px-4 py-2">{{ $medication->quantity }}</td>
                         </tr>

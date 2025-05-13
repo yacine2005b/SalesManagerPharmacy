@@ -23,7 +23,7 @@ class SaleController extends Controller
         return view('salesHistory', compact('saleSessions'));
     }
     
-    public function show(SaleSession $saleSession)
+    public function saleDetails(SaleSession $saleSession)
     {
         // Fetch all sales associated with the given session
         $sales = $saleSession->sales()->with('saleItems')->get();
@@ -40,5 +40,10 @@ class SaleController extends Controller
         ]); 
         return redirect()->route('sales.history')->with('success', 'Sale deleted successfully.');
     }
-   
+   public function show($id)
+    {
+        $sale = Sale::with('saleItems.product')->findOrFail($id);
+
+        return view('sales.show', compact('sale'));
+    }
 }

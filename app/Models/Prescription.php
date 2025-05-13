@@ -14,6 +14,8 @@ class Prescription extends Model
         'patient_name',
         'patient_phone',
         'notes',
+        'duration',
+        'prescription_date',
         'status',
     ];
 

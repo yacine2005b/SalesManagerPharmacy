@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Lot;
 use App\Models\Product;
 use App\Models\ActivityLog;
+use Picqer\Barcode\BarcodeGeneratorPNG;
 
 class LotController extends Controller
 {
@@ -39,27 +40,35 @@ class LotController extends Controller
         ]);
 
         // Generate batch number
-        $validatedData['batch_number'] = $this->batchNumberService->generateBatchNumber();
+        $batchNumber = $this->batchNumberService->generateBatchNumber();
+
+
+        // Generate a unique barcode based on the batch number
+        $generator = new BarcodeGeneratorPNG();
+         $barcodeUrl = "https://barcode.tec-it.com/barcode.ashx?data={$batchNumber}&code=Code128&dpi=96";
 
         // Create the lot
         $lot = Lot::create([
             'product_id' => $request->product_id,
-            'batch_number' => $validatedData['batch_number'],
+            'batch_number' => $batchNumber,
             'quantity' => $request->quantity,
             'price' => $request->price,
             'expiration_date' => $request->expiration_date,
+            'barcode' =>  $barcodeUrl, // Save the barcode
         ]);
 
-     
+        // Update the product's total quantity
         $product = Product::findOrFail($request->product_id);
         $product->total_quantity += $request->quantity;
         $product->save();
+
         // Log the activity
         ActivityLog::create([
             'user_id' => auth()->id(),
             'action' => auth()->user()->name . ' created a lot for: ' . $product->name,
-        ]); 
-        return redirect()->route("lot.index", $request->product_id)->with('success', 'Lot added successfully.');
+        ]);
+
+        return redirect()->route("lot.index", $request->product_id)->with('success', 'Lot added successfully with barcode!');
     }
 
     /**
@@ -107,5 +116,15 @@ class LotController extends Controller
         $lot->delete(); // Delete the lot
 
         return redirect()->route('product.show', $productId)->with('success', 'Lot deleted successfully.');
+    }
+
+    /**
+     * Print the barcode for a lot.
+     */
+    public function printBarcode($id)
+    {
+        $lot = Lot::findOrFail($id);
+
+        return view('lots.printBarcode', compact('lot'));
     }
 }

@@ -1,11 +1,17 @@
 @extends('layout.layout')
 
 @section('content')
-@php
-  
-    $isInsuranceSale = true; // Set this to true for insurance sales
-@endphp
-<div class="container mx-auto p-6">
+    <!-- Current Prescription Details -->
+    @if (session('current_prescription'))
+        <div class="mb-6 p-4 bg-gray-100 border border-gray-300 rounded-md">
+            <h3 class="text-lg font-semibold text-gray-800">Current Prescription</h3>
+            <p class="text-sm text-gray-600">
+                <strong>Doctor:</strong> {{ session('current_prescription')['doctor_name'] }}<br>
+                <strong>Patient:</strong> {{ session('current_prescription')['patient_name'] }}
+            </p>
+        </div>
+    @endif
+
     <!-- Prescription Selection -->
     <div class="mb-6">
         <form action="{{ route('pos.loadPrescriptionToCart') }}" method="POST">
@@ -22,9 +28,8 @@
         </form>
     </div>
 
+    <!-- Cart -->
     <div class="grid grid-cols-3 gap-6">
-        <!-- Cart -->
-        @include('pos.checkout', ['isInsuranceSale' => true])
+        @include('pos.checkout', ['isInsuranceSale' => $isInsuranceSale])
     </div>
-</div>
 @endsection

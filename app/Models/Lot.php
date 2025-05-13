@@ -11,6 +11,7 @@ class Lot extends Model
         'batch_number',
         'quantity',
         'price',
+        'barcode',
         'expiration_date',
     ];
 

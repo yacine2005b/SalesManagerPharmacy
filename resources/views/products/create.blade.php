@@ -1,6 +1,6 @@
 <form action="{{ route('product.store') }}" method="POST" class="space-y-4 w-1/2 border p-6 rounded shadow">
     @csrf
-
+<h1 class="text-2xl ">Add Product</h1>
     <div>
         <label for="name" class="block font-medium">Name</label>
         <input type="text" name="name" id="name" class="border border-gray-300 rounded p-2 w-full" placeholder="Product Name" required>
@@ -42,8 +42,14 @@
         <input type="checkbox" name="remboursable" id="remboursable" value="1">
     </div>
 
+    <!-- Added Prescripted Field -->
     <div>
-      
+        <label for="prescription" class="block font-medium">Prescripted</label>
+        <input type="checkbox" name="prescription" id="prescription" value="1">
+        <input type="hidden" value="0" name="prescription">
+    </div>
+
+    <div>
         <input type="hidden" value="0" name="total_quantity" id="total_quantity" class="border border-gray-300 rounded p-2 w-full" placeholder="Total Quantity" required>
     </div>
 

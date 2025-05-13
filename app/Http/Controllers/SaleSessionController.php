@@ -13,7 +13,7 @@ class SaleSessionController extends Controller
         // Check if a session is already active
         $activeSession = SaleSession::where('user_id', auth()->id())->whereNull('end_time')->first();
         if ($activeSession) {
-            return redirect()->route('pos.index')->with('error', 'A sale session is already active.');
+            return redirect()->route('pos.normal')->with('error', 'A sale session is already active.');
         }
 
         // Create a new sale session
@@ -29,7 +29,7 @@ class SaleSessionController extends Controller
             'details' => 'Session ID: ' . $session->id,
         ]);
 
-        return redirect()->route('pos.index')->with('success', 'Sale session started successfully.');
+        return redirect()->route('pos.normal')->with('success', 'Sale session started successfully.');
     }
     public function endSession(SaleSession $session)
 {
@@ -50,6 +50,6 @@ class SaleSessionController extends Controller
         'details' => 'Session ID: ' . $session->id,
     ]);
 
-    return redirect()->route('pos.index')->with('success', 'Sale session ended successfully.');
+    return redirect()->route('pos.normal')->with('success', 'Sale session ended successfully.');
 }
 }

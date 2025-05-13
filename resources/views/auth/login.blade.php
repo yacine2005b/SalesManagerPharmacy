@@ -26,25 +26,14 @@
         <div class="w-full max-w-md">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold text-gray-800">Welcome</h1>
-                <p class="text-gray-600 mt-2">Create a new account</p>
+                <p class="text-gray-600 mt-2">LOGIN</p>
             </div>
 
             <div class="bg-white p-8 rounded-xl shadow-md">
                 <form method="POST" action="{{route("login")}}" class="space-y-5">
                     @csrf
 
-                    <!-- Name -->
-                    <div>
-                        <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                        <input id="name" name="name" type="text" required 
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
-                            value="{{ old('name') }}"
-                            placeholder="John Doe">
-                        @error('name')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
+                  
                     <!-- Email -->
                     <div>
                         <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>

@@ -1,3 +1,6 @@
+
+
+
 <form action="{{ route('checkout') }}" method="POST">
     @csrf
     <input type="hidden" name="is_insurance" value="{{ $isInsuranceSale ?? false }}">
@@ -7,4 +10,5 @@
         </svg>
         Checkout
     </button>
-</form>
+
+

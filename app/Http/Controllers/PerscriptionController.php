@@ -19,9 +19,9 @@ class PerscriptionController extends Controller
     {
         // Validate the request data
         $request->validate([
-            'doctor_name' => 'required|string|max:255',
-            'patient_name' => 'required|string|max:255',
-            'patient_phone' => 'nullable|string|max:255',
+            'doctor_name' => 'required|string|max:50',
+            'patient_name' => 'required|string|max:50',
+            'patient_phone' => 'nullable|string|max:15',
             'notes' => 'nullable|string',
             'duration' => 'nullable|integer|min:1', // Validate duration
             'prescription_date' => 'nullable|date', // Validate prescription date

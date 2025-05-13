@@ -9,13 +9,14 @@
         </div>
     </div>
     
-    <div class="overflow-x-auto">
+    <div class="overflow-hidden flex flex-col items-center">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doctor</th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
             </thead>
@@ -31,6 +32,21 @@
                         <div>{{ $prescription->created_at->format('M d, Y') }}</div>
                         <div class="text-xs text-gray-400">{{ $prescription->created_at->diffForHumans() }}</div>
                     </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        @php
+                            $statusColors = [
+                                'pending' => 'bg-yellow-100 text-yellow-800',
+                                'approved' => 'bg-green-100 text-green-800',
+                                'rejected' => 'bg-red-100 text-red-800',
+                                'completed' => 'bg-blue-100 text-blue-800',
+                                'dispensed' => 'bg-purple-100 text-purple-800'
+                            ];
+                            $statusColor = $statusColors[strtolower($prescription->status)] ?? 'bg-gray-100 text-gray-800';
+                        @endphp
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium {{ $statusColor }}">
+                            {{ ucfirst($prescription->status) }}
+                        </span>
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div class="flex justify-end space-x-3">
                             <a href="{{ route('prescription.index', ['edit' => $prescription->id]) }}" 
@@ -39,7 +55,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
                             </a>
-                            <form action="{{route("prescription.destroy",$prescription->id )}}" method="POST" onsubmit="return confirm('Are you sure you want to delete this prescription?')">
+                            <form action="{{route('prescription.destroy', $prescription->id)}}" method="POST" onsubmit="return confirm('Are you sure you want to delete this prescription?')">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50" title="Delete">
@@ -48,7 +64,7 @@
                                     </svg>
                                 </button>
                             </form>
-                            <a href="{{route("prescription.show",$prescription->id )}}" 
+                            <a href="{{route('prescription.show', $prescription->id)}}" 
                                class="text-green-500 hover:text-green-700 p-1 rounded-full hover:bg-green-50" title="View">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -60,7 +76,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">
+                    <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
                         <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
