@@ -1,4 +1,4 @@
-<form action="{{ route('product.store') }}" method="POST" class="space-y-4 w-1/2 border p-6 rounded shadow">
+<form action="{{ route('product.store') }}" method="POST" class="space-y-2 w-1/2 border p-6 rounded shadow">
     @csrf
 <h1 class="text-2xl ">Add Product</h1>
     <div>
@@ -16,12 +16,13 @@
         <input type="number" name="low_stock_threshold" id="low_stock_threshold" class="border border-gray-300 rounded p-2 w-full" placeholder="Low Stock Threshold" required>
     </div>
 
-    <div>
-        <label for="dosage" class="block font-medium">Dosage</label>
+    <div class="flex gap-x-2">
+        <div>
+             <label for="dosage" class="block font-medium">Dosage</label>
         <input type="number" name="dosage" id="dosage" class="border border-gray-300 rounded p-2 w-full" placeholder="Dosage" required>
-    </div>
-
-    <div>
+        </div>
+       
+        <div>
         <label for="dosage_unit" class="block font-medium">Dosage Unit</label>
         <select name="dosage_unit" id="dosage_unit" class="border border-gray-300 rounded p-2 w-full" required>
             <option value="" disabled selected>Select a unit</option>
@@ -36,6 +37,9 @@
             <option value="g/mL">g/mL</option>
         </select>
     </div>
+    </div>
+
+    
 
     <div>
         <label for="remboursable" class="block font-medium">Remboursable</label>

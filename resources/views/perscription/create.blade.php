@@ -70,7 +70,10 @@
                             class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                         <option value="">Select Product</option>
                         @foreach($products as $product)
-                            <option value="{{ $product->id }}">{{ $product->name }}</option>
+
+                          @if($product->total_quantity > 0)
+            <option value="{{ $product->id }}">{{ $product->name }}</option>
+        @endif
                         @endforeach
                     </select>
                     <input type="number" name="medications[0][quantity]" placeholder="Qty" min="1" value="1" required

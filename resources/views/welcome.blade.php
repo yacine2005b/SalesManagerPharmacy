@@ -1,7 +1,8 @@
 @extends('layout.layout')
 
 @section('content')
-<div class="container mx-auto p-6">
+@auth
+    <div class="container mx-auto p-6">
     <h1 class="text-2xl font-bold mb-6">Dashboard</h1>
 
     <!-- Sale Session Section -->
@@ -84,4 +85,8 @@
         @endif
     </div>
 </div>
+@endauth
+@guest
+   <h1 class="text-center text-2xl text-bold mt-7">Please log in to access the dashboard.</h1> 
+@endguest
 @endsection

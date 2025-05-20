@@ -13,6 +13,9 @@
         <a href="{{route("pos.prescription")}}" class="px-4 py-2 rounded transition-colors">prescription sale</a>
     </div>
 
+    {{-- Barcode Scanner Input (hidden) --}}
+    <input type="text" id="barcode_input" autocomplete="off" style="opacity:0;position:absolute;left:-9999px;">
+
     @if($activeSession)
         <div class="grid grid-cols-3 gap-6">
             <!-- Product List -->
@@ -39,8 +42,42 @@
 </div>
 
 <script>
+    // Keep barcode input focused
+    function focusBarcodeInput() {
+        document.getElementById('barcode_input').focus();
+    }
+    window.onload = focusBarcodeInput;
+    document.addEventListener('click', focusBarcodeInput);
+
+    // Barcode scanning: add product to cart by barcode
+    document.getElementById('barcode_input').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const barcode = this.value.trim();
+            this.value = '';
+            if (barcode) {
+                fetch('{{ route('cart.add') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                    body: JSON.stringify({ barcode: barcode }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload(); // Or update cart section dynamically
+                    } else {
+                        alert(data.message || 'Product not found.');
+                    }
+                });
+            }
+        }
+    });
+
     // Load prescription medications into the cart
-    document.getElementById('prescription_id').addEventListener('change', function () {
+    document.getElementById('prescription_id')?.addEventListener('change', function () {
         const prescriptionId = this.value;
 
         if (prescriptionId) {

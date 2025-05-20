@@ -80,11 +80,12 @@ class UserManagementController extends Controller
    
     public function destroy(User $user)
     {
+        $userName = $user->name;
         $user->delete();
         // Log the activity
         ActivityLog::create([
             'user_id' => auth()->id(),
-            'action' => auth()->user()->name . ' Deleted a user: ' . $request->name,
+            'action' => auth()->user()->name . ' Deleted a user: ' . $userName,
         ]);
         return redirect()->route('admin.users.index')->with('success', 'User deleted successfully.');
     }

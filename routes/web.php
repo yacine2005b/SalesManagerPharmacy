@@ -16,10 +16,10 @@ use App\Http\Controllers\PerscriptionController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
-Route::get("/", [DashboardController::class, "index"])->name('welcome')->middleware('auth');
+Route::get("/", [DashboardController::class, "index"])->name('welcome');
 
 // Routes for managing inventory (pharmacist role)
-Route::middleware('role:pharmacist')->group(function () {
+Route::middleware('role:pharmacist,admin')->group(function () {
     Route::get('/inventory', [ProductController::class, 'index'])->name('inventory.index');
     Route::post('/inventory/add', [ProductController::class, 'store'])->name('product.store');
     Route::get('/inventory/{product}', [ProductController::class, 'show'])->name('product.show');
@@ -27,6 +27,8 @@ Route::middleware('role:pharmacist')->group(function () {
     Route::get('/inventory/{product}/edit', [ProductController::class, 'edit'])->name('product.edit');
     Route::put('/inventory/{product}', [ProductController::class, 'update'])->name('product.update');
 
+
+Route::get('/products/search', [ProductController::class, 'search'])->name('products.search');
     Route::post('/inventory/{product}/add', [LotController::class, 'store'])->name('lot.store');
     Route::get('/inventory/{product}/add', [LotController::class, 'index'])->name('lot.index');
     Route::get('/lots/{lot}/edit', [LotController::class, 'editLot'])->name('lot.edit');
@@ -36,7 +38,7 @@ Route::middleware('role:pharmacist')->group(function () {
 });
 
 // Routes for sales and POS (cashier role)
-Route::middleware('role:cashier')->group(function () {
+Route::middleware('role:cashier,admin')->group(function () {
     Route::post('/cart/add', [CartController::class, 'addToCart'])->name('cart.add');
     Route::post('/cart/update', [CartController::class, 'updateCart'])->name('cart.update');
     Route::post('/cart/remove', [CartController::class, 'removeFromCart'])->name('cart.remove');

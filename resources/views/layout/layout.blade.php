@@ -27,7 +27,7 @@
             <header class="bg-white shadow-sm">
                 <div class="flex items-center justify-between px-6 py-4">
                     <div class="flex items-center space-x-4">
-                        <!-- You can add a hamburger menu here for mobile if needed -->
+                        <!-- mobile display-->
                     </div>
                     
                     <div class="flex items-center space-x-6">

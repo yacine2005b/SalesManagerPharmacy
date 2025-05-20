@@ -3,7 +3,7 @@
 @section('content')
 <div class="container mx-auto p-4">
     <h1 class="text-2xl font-bold mb-6 text-gray-800">Prescription Management</h1>
-    <div class="flex">
+    <div class="flex gap-4">
         @include('perscription.create')
    
         <!-- Right Side - List -->
@@ -56,7 +56,9 @@
                     class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                 <option value="">Select Product</option>
                 @foreach($products as $product)
-                    <option value="{{ $product->id }}">{{ $product->name }}</option>
+                    @if($product->total_quantity > 0)
+                        <option value="{{ $product->id }}">{{ $product->name }}</option>
+                    @endif
                 @endforeach
             </select>
             <input type="number" name="medications[${medicationIndex}][quantity]" placeholder="Qty" min="1" value="1" required

@@ -3,7 +3,7 @@
         <h2 class="text-xl font-bold text-gray-800">Available Products</h2>
         <span class="text-xs text-gray-500">{{ $products->count() }} items</span>
     </div>
-
+@include('shared.search')
     <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         @foreach ($products as $product)
         <div class="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-sm transition-shadow">

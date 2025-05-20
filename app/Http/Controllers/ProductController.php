@@ -11,7 +11,8 @@ class ProductController extends Controller
     public function index()
     {
         $products = Product::all();
-        return view('inventory', compact('products'));
+         $lowStockProducts = Product::whereColumn('total_quantity', '<=', 'low_stock_threshold')->get();
+        return view('inventory', compact('products', 'lowStockProducts'));
     }
 
     public function store(Request $request)
@@ -89,13 +90,12 @@ class ProductController extends Controller
         return redirect()->route('inventory.index')->with('success', 'Product deleted successfully');
     }
 
-    public function searchProducts(Request $request)
-    {
-        $query = $request->input('query');
+public function search(Request $request)
+{
+    $query = $request->input('query');
+    $products = Product::where('name', 'like', "%{$query}%")->get();
 
-        // Fetch products matching the query
-        $products = Product::where('name', 'LIKE', "%{$query}%")->get();
-
-        return response()->json($products);
-    }
+    // Return only the product cards grid as HTML
+    return view('shared.productGrid', compact('products'))->render();
+}
 }

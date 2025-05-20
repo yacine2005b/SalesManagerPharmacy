@@ -1,7 +1,7 @@
 <div class="w-full px-6 py-4">
     @include('shared.search')
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
-        
+    <div id="allProducts" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
+       
         @foreach ($products as $product)
         <div class="bg-white border border-gray-200 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 p-5 flex flex-col h-full">
             <!-- Product Info -->
@@ -82,4 +82,20 @@
             });
         }
     });
+    document.getElementById('product_search').addEventListener('input', function() {
+    const query = this.value.trim();
+    fetch(`/products/search?query=${encodeURIComponent(query)}`)
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('allProducts').innerHTML = html;
+        });
+});
+document.getElementById('search').addEventListener('input', function() {
+    const query = this.value.trim();
+    fetch(`/products/search?query=${encodeURIComponent(query)}`)
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('allProducts').innerHTML = html;
+        });
+});
 </script>
