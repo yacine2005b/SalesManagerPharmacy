@@ -1,6 +1,7 @@
 @extends('layout.layout')
 
 @section('content')
+@include('pos.nav')
     <!-- Current Prescription Details -->
     @if (session('current_prescription'))
         <div class="mb-6 p-4 bg-gray-100 border border-gray-300 rounded-md">
@@ -21,7 +22,7 @@
                 <option value="">-- Select Prescription --</option>
                 @foreach($prescriptions as $prescription)
                     <option value="{{ $prescription->id }}">
-                        {{ $prescription->doctor_name }} - {{ $prescription->patient_name }}
+                        {{ $prescription->doctor->name }} - {{ $prescription->patient->name }}
                     </option>
                 @endforeach
             </select>

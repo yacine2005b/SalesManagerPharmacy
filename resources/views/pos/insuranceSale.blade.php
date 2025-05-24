@@ -1,11 +1,21 @@
 @extends('layout.layout')
 
 @section('content')
+@include('pos.nav')
 @php
   
     $isInsuranceSale = true; // Set this to true for insurance sales
 @endphp
 <div class="container mx-auto p-6">
+     @if (session('current_prescription'))
+        <div class="mb-6 p-4 bg-gray-100 border border-gray-300 rounded-md">
+            <h3 class="text-lg font-semibold text-gray-800">Current Prescription</h3>
+            <p class="text-sm text-gray-600">
+                <strong>Doctor:</strong> {{ session('current_prescription')['doctor_name'] }}<br>
+                <strong>Patient:</strong> {{ session('current_prescription')['patient_name'] }}
+            </p>
+        </div>
+    @endif
     <!-- Prescription Selection -->
     <div class="mb-6">
         <form action="{{ route('pos.loadPrescriptionToCart') }}" method="POST">
@@ -15,16 +25,22 @@
                 <option value="">-- Select Prescription --</option>
                 @foreach($prescriptions as $prescription)
                     <option value="{{ $prescription->id }}">
-                        {{ $prescription->doctor_name }} - {{ $prescription->patient_name }}
+                        {{ $prescription->doctor->name }} - {{ $prescription->patient->name }}
                     </option>
                 @endforeach
             </select>
         </form>
     </div>
 
-    <div class="grid grid-cols-3 gap-6">
-        <!-- Cart -->
-        @include('pos.checkout', ['isInsuranceSale' => true])
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Cart Section -->
+        <div>
+            @include('pos.checkout')
+        </div>
+        <!-- Insurance Form Section -->
+        <div>
+            @include('cart.insuranceForm')
+        </div>
     </div>
 </div>
 @endsection

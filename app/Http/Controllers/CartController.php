@@ -104,7 +104,7 @@ class CartController extends Controller
             return redirect()->route('pos.insurance')->with('success', 'Cart updated successfully.');
         }
 
-        return redirect()->route('pos.index')->with('success', 'Cart updated successfully.');
+        return redirect()->route('pos.normal')->with('success', 'Cart updated successfully.');
     }
 
     public function removeFromCart(Request $request)
@@ -120,7 +120,7 @@ class CartController extends Controller
         if ($isInsuranceSale) {
             return redirect()->route('insurance.sale')->with('success', 'Cart updated successfully.');
         }
-        return redirect()->route('pos.index')->with('success', 'Item removed from cart.');
+        return redirect()->route('pos.normal')->with('success', 'Item removed from cart.');
     }
 
     public function updateInsurance(Request $request)
@@ -225,5 +225,62 @@ class CartController extends Controller
 
         // Save the updated cart back to the session
         session(['cart' => $cart]);
+    }
+    public function smartAdd(Request $request)
+    {
+        $query = $request->input('barcode_or_search');
+
+        $lot = \App\Models\Lot::where('barcode', $query)->first();
+        if ($lot) {
+            $product = $lot->product;
+        } else {
+            // Only find products that have at least one lot
+            $product = \App\Models\Product::where('name', 'ILIKE', "%$query%")
+                ->whereHas('lots')
+                ->first();
+            if (!$product) {
+                $lot = \App\Models\Lot::where('batch_number', $query)->first();
+                if ($lot) {
+                    $product = $lot->product;
+                }
+            }
+        }
+
+        if (empty($product)) {
+            return redirect()->back()->with('error', 'Product not found.');
+        }
+
+        // If found by lot, use that lot; otherwise, use the first lot of the product (if any)
+        if (empty($lot) && isset($product)) {
+            $lot = $product->lots()->first();
+        }
+
+        // Add to cart logic with duplicate check
+        $cart = session('cart', []);
+        $found = false;
+        foreach ($cart as &$item) {
+            if ($item['product_id'] == $product->id && $item['lot_id'] == ($lot ? $lot->id : null)) {
+                $item['quantity'] += 1;
+                $found = true;
+                break;
+            }
+        }
+        unset($item);
+
+        if (!$found) {
+            $cart[] = [
+                'product_name' => $product->name,
+                'product_id' => $product->id,
+                'lot_id' => $lot ? $lot->id : null,
+                'price' => $lot ? $lot->price : ($product->price ?? 0),
+                'quantity' => 1,
+                'discount' => 0,
+                'is_reimbursable' => $product->remboursable,
+            ];
+        }
+
+        session(['cart' => $cart]);
+
+        return redirect()->back()->with('success', 'Product added to cart.');
     }
 }

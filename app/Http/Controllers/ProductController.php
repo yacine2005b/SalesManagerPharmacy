@@ -8,11 +8,21 @@ use App\models\ActivityLog;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::all();
-         $lowStockProducts = Product::whereColumn('total_quantity', '<=', 'low_stock_threshold')->get();
-        return view('inventory', compact('products', 'lowStockProducts'));
+        // Check if session has a search query
+        $search = session('product_search', null);
+
+        if ($search) {
+            $products = Product::where('name', 'LIKE', "%$search%")
+                ->orWhere('description', 'LIKE', "%$search%")
+                ->get();
+        } else {
+            $products = Product::all();
+        }
+
+        $lowStockProducts = Product::whereColumn('total_quantity', '<=', 'low_stock_threshold')->get();
+        return view('inventory', compact('products', 'lowStockProducts', 'search'));
     }
 
     public function store(Request $request)
@@ -93,9 +103,13 @@ class ProductController extends Controller
 public function search(Request $request)
 {
     $query = $request->input('query');
-    $products = Product::where('name', 'like', "%{$query}%")->get();
+    session(['product_search' => $query]);
+    return redirect()->route('inventory.index');
+}
 
-    // Return only the product cards grid as HTML
-    return view('shared.productGrid', compact('products'))->render();
+public function clearSearch()
+{
+    session()->forget('product_search');
+    return redirect()->route('inventory.index');
 }
 }

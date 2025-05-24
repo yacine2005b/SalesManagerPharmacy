@@ -21,6 +21,8 @@ Route::get("/", [DashboardController::class, "index"])->name('welcome');
 // Routes for managing inventory (pharmacist role)
 Route::middleware('role:pharmacist,admin')->group(function () {
     Route::get('/inventory', [ProductController::class, 'index'])->name('inventory.index');
+Route::get('/inventory/search', [ProductController::class, 'search'])->name('inventory.search');
+Route::get('/inventory/clear-search', [ProductController::class, 'clearSearch'])->name('inventory.clearSearch');
     Route::post('/inventory/add', [ProductController::class, 'store'])->name('product.store');
     Route::get('/inventory/{product}', [ProductController::class, 'show'])->name('product.show');
     Route::delete('/inventory/{product}', [ProductController::class, 'destroy'])->name('product.destroy');
@@ -39,6 +41,7 @@ Route::get('/products/search', [ProductController::class, 'search'])->name('prod
 
 // Routes for sales and POS (cashier role)
 Route::middleware('role:cashier,admin')->group(function () {
+    Route::post('/cart/smart-add', [CartController::class, 'smartAdd'])->name('cart.smartAdd');
     Route::post('/cart/add', [CartController::class, 'addToCart'])->name('cart.add');
     Route::post('/cart/update', [CartController::class, 'updateCart'])->name('cart.update');
     Route::post('/cart/remove', [CartController::class, 'removeFromCart'])->name('cart.remove');

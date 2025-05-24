@@ -8,6 +8,8 @@ use App\Models\Lot;
 use App\Models\Product;
 use App\Models\ActivityLog;
 use Picqer\Barcode\BarcodeGeneratorPNG;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class LotController extends Controller
 {
@@ -42,19 +44,22 @@ class LotController extends Controller
         // Generate batch number
         $batchNumber = $this->batchNumberService->generateBatchNumber();
 
+        // Generate the barcode image using the API
+        $barcodeUrl = "https://barcode.tec-it.com/barcode.ashx?data={$batchNumber}&code=Code128&dpi=96";
+        $barcodeImage = file_get_contents($barcodeUrl);
 
-        // Generate a unique barcode based on the batch number
-        $generator = new BarcodeGeneratorPNG();
-         $barcodeUrl = "https://barcode.tec-it.com/barcode.ashx?data={$batchNumber}&code=Code128&dpi=96";
+        // Save the barcode image to storage/app/public/barcodes
+        $barcodeFileName = 'barcodes/' . Str::random(10) . '_' . $batchNumber . '.png';
+        Storage::disk('public')->put($barcodeFileName, $barcodeImage);
 
-        // Create the lot
+        // Create the lot and save the barcode file path
         $lot = Lot::create([
             'product_id' => $request->product_id,
             'batch_number' => $batchNumber,
             'quantity' => $request->quantity,
             'price' => $request->price,
             'expiration_date' => $request->expiration_date,
-            'barcode' =>  $barcodeUrl, // Save the barcode
+            'barcode' => $barcodeFileName, // Save the file path
         ]);
 
         // Update the product's total quantity
@@ -90,11 +95,24 @@ class LotController extends Controller
             'expiration_date' => 'required|date',
             'price' => 'required|numeric|min:0',
         ]);
+
+        // Calculate the difference in quantity
+        $oldQuantity = $lot->quantity;
+        $newQuantity = $validated['quantity'];
+        $quantityDiff = $newQuantity - $oldQuantity;
+
+        // Update the lot
+        $lot->update($validated);
+
+        // Update the product's total quantity
+        $product = $lot->product;
+        $product->total_quantity += $quantityDiff;
+        $product->save();
+
         ActivityLog::create([
             'user_id' => auth()->id(),
             'action' => auth()->user()->name . ' edited a lot for: ' . $product->name,
         ]);
-        $lot->update($validated);
 
         return redirect()->route('product.show', $lot->product_id)->with('success', 'Lot updated successfully.');
     }
@@ -104,10 +122,12 @@ class LotController extends Controller
      */
     public function destroy(Lot $lot)
     {
-        $productId = $lot->product_id; // Save the product ID for redirection
-
-        $product = $lot->product; 
-        $product->total_quantity -= $lot->quantity; 
+        $productId = $lot->product_id; 
+        
+        // Update product total quantity and save
+        $product = $lot->product;
+        $product->total_quantity -= $lot->quantity;
+        $product->save();
 
         ActivityLog::create([
             'user_id' => auth()->id(),

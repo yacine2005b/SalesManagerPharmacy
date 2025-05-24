@@ -24,10 +24,13 @@
                 @forelse($prescriptions as $prescription)
                 <tr class="hover:bg-gray-50">
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">{{ $prescription->patient_name }}</div>
-                        <div class="text-xs text-gray-500">{{ $prescription->patient_phone }}</div>
+                        <div class="text-sm font-medium text-gray-900">{{ $prescription->patient->name}}</div>
+                        <div class="text-xs text-gray-500">{{ $prescription->patient->phone }}</div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $prescription->doctor_name }}</td>
+                     <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">{{ $prescription->doctor->name}}</div>
+                        <div class="text-xs text-gray-500">{{ $prescription->doctor->phone }}</div>
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div>{{ $prescription->created_at->format('M d, Y') }}</div>
                         <div class="text-xs text-gray-400">{{ $prescription->created_at->diffForHumans() }}</div>
@@ -49,12 +52,7 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div class="flex justify-end space-x-3">
-                            <a href="{{ route('prescription.index', ['edit' => $prescription->id]) }}" 
-                               class="text-blue-500 hover:text-blue-700 p-1 rounded-full hover:bg-blue-50" title="Edit">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                            </a>
+                          
                             <form action="{{route('prescription.destroy', $prescription->id)}}" method="POST" onsubmit="return confirm('Are you sure you want to delete this prescription?')">
                                 @csrf
                                 @method('DELETE')

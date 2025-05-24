@@ -31,9 +31,7 @@
                         </ul>
                     </div>
                 @else
-                    <h3 class="text-sm font-medium text-green-800">
-                        Stock Levels Normal (Threshold: {{ $product->low_stock_threshold }})
-                    </h3>
+                    
                     <div class="mt-2 text-sm text-green-700">
                         <p>All products are above the low stock threshold.</p>
                     </div>

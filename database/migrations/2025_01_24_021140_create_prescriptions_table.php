@@ -13,13 +13,12 @@ return new class extends Migration
     {
         Schema::create('prescriptions', function (Blueprint $table) {
             $table->id();
-            $table->string('doctor_name'); // Name of the doctor issuing the prescription
-            $table->string('patient_name'); // Name of the patient
-            $table->string('patient_phone')->nullable(); // Patient's phone number
+          $table->foreignId('doctor_id')->constrained('doctors')->onDelete('cascade');
+            $table->foreignId('patient_id')->constrained('patients')->onDelete('cascade');
             $table->text('notes')->nullable(); // Additional notes about the prescription
             $table->date('prescription_date')->nullable();
             $table->enum('status', ['pending', 'processed', 'completed'])->default('pending'); // Status of the prescription
-            $table->integer('duration')->nullable(); // Date the prescription was issued
+            $table->integer('duration')->nullable(); // Duration in days
             $table->timestamps();
         });
     }

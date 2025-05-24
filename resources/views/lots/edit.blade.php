@@ -63,14 +63,12 @@
         <div class="bg-gray-50 p-4 rounded-lg">
             <label for="price" class="block text-sm font-medium text-gray-700 mb-2">Price</label>
             <div class="relative rounded-md shadow-sm">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <span class="text-gray-500">$</span>
-                </div>
+            
                 <input type="number" step="0.01" name="price" id="price" value="{{ $lot->price }}"
                        class="block w-full pl-7 pr-12 py-2 bg-white border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                        min="0.01" required>
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                    <span class="text-gray-500 text-sm">USD</span>
+                    <span class="text-gray-500 text-sm">DA</span>
                 </div>
             </div>
         </div>

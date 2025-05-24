@@ -10,6 +10,7 @@ use App\Models\Lot;
 use App\Models\SaleSession;
 use App\Models\ActivityLog;
 use App\Models\Prescription;
+use App\Models\ShifaCard; // Add at the top if not already imported
 
 class PosController extends Controller
 {
@@ -74,6 +75,31 @@ class PosController extends Controller
 
         $isInsuranceSale = $request->input('is_insurance', false);
 
+        // --- SHIFA CARD LOGIC ---
+        if ($isInsuranceSale && $prescriptionId) {
+            $prescription = Prescription::find($prescriptionId);
+            if ($prescription && $prescription->patient) {
+                $patient = $prescription->patient;
+                // Only create if patient does not already have a Shifa Card
+                if (!$patient->shifaCard) {
+                    $validated = $request->validate([
+                        'shifa_card_number' => 'required|string|max:50',
+                        'coverage_type' => 'required|in:full,partial',
+                        'issue_date' => 'nullable|date',
+                        'expiry_date' => 'nullable|date',
+                    ]);
+                    ShifaCard::create([
+                        'patient_id' => $patient->id,
+                        'card_number' => $validated['shifa_card_number'],
+                        'coverage_type' => $validated['coverage_type'],
+                        'issue_date' => $validated['issue_date'] ?? null,
+                        'expiry_date' => $validated['expiry_date'] ?? null,
+                    ]);
+                }
+            }
+        }
+        // --- END SHIFA CARD LOGIC ---
+
         $coveredAmount = 0;
         if ($isInsuranceSale) {
             // Calculate covered amount only for reimbursable items
@@ -91,11 +117,11 @@ class PosController extends Controller
         $saleType = $prescriptionId ? 'prescription' : ($isInsuranceSale ? 'insurance' : 'normal');
 
         // Create a new sale record
-        $sale = Sale::create([
+        $sale = Sale::create([ 
             'sale_session_id' => $activeSession->id,
             'type' => $saleType,
+            'prescription_id' => $prescriptionId,
             'coverage_type' => $isInsuranceSale ? session('coverage_type') : null,
-            'shifa_card_number' => $isInsuranceSale ? session('shifa_card_number') : null,
             'total_amount' => $totalAmount,
             'covered_amount' => $coveredAmount,
             'patient_pays' => $patientPays,
@@ -158,7 +184,7 @@ class PosController extends Controller
         ]);
 
         // Fetch the prescription with its medications and related products
-        $prescription = Prescription::with('medications.product.lots')->findOrFail($request->prescription_id);
+        $prescription = Prescription::with('medications.product.lots', 'patient.shifaCard')->findOrFail($request->prescription_id);
 
         // Check if the prescription is already processed
         if ($prescription->status === 'processed') {
@@ -202,12 +228,21 @@ class PosController extends Controller
             'cart' => $cart,
             'current_prescription' => [
                 'id' => $prescription->id,
-                'doctor_name' => $prescription->doctor_name,
-                'patient_name' => $prescription->patient_name,
+                'doctor_name' => $prescription->doctor->name,
+                'patient_name' => $prescription->patient->name,
             ],
             'prescription_id' => $prescription->id, // Save prescription ID for later use
         ]);
 
-        return redirect()->route('pos.prescription')->with('success', 'Prescription loaded into cart successfully!');
+        // Pass shifaCard to the view
+        $shifaCard = $prescription && $prescription->patient ? $prescription->patient->shifaCard : null;
+
+        // Pass $shifaCard to your insurance sale view
+        return view('pos.insuranceSale', [
+            'cart' => $cart,
+            'shifaCard' => $shifaCard,
+            'prescriptions' => Prescription::where('status', 'pending')->get(), // Only pending prescriptions
+            'isInsuranceSale' => true,
+        ]);
     }
 }

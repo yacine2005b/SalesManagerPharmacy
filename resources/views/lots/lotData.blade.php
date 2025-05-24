@@ -27,7 +27,7 @@
                 @forelse($product->lots as $lot)
                 <tr class="{{ $lot->expiration_date < now() ? 'bg-red-50' : '' }}">
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <img src="{{ $lot->barcode }}" alt="Barcode for {{ $lot->batch_number }}" class="h-12 w-32 object-contain">
+                        <img src="{{ asset('storage/' . $lot->barcode) }}" alt="Barcode for {{ $lot->batch_number }}" class="h-12 w-32 object-contain">
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $lot->batch_number }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $lot->quantity }}</td>
@@ -37,7 +37,7 @@
                         <span class="ml-2 px-2 py-1 text-xs text-red-800 bg-red-100 rounded-full">Expired</span>
                         @endif
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($lot->price, 2) }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ number_format($lot->price, 2) }}DA</td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         @if($lot->quantity <= $product->low_stock_threshold)
                             <span class="px-2 py-1 text-xs font-medium text-yellow-800 bg-yellow-100 rounded-full">Low Stock</span>

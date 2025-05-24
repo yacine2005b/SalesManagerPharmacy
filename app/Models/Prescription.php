@@ -10,9 +10,8 @@ class Prescription extends Model
     use HasFactory;
 
     protected $fillable = [
-        'doctor_name',
-        'patient_name',
-        'patient_phone',
+        'doctor_id',
+        'patient_id',
         'notes',
         'duration',
         'prescription_date',
@@ -33,5 +32,21 @@ class Prescription extends Model
     public function sale()
     {
         return $this->hasOne(Sale::class);
+    }
+
+    /**
+     * Get the doctor associated with the prescription.
+     */
+    public function doctor()
+    {
+        return $this->belongsTo(Doctor::class);
+    }
+
+    /**
+     * Get the patient associated with the prescription.
+     */
+    public function patient()
+    {
+        return $this->belongsTo(Patient::class);
     }
 }

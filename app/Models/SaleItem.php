@@ -8,7 +8,6 @@ class SaleItem extends Model
 {
     protected $fillable = [
         'sale_id',
-        'product_id',
         'lot_id',
         'quantity',
         'original_price',
@@ -17,17 +16,17 @@ class SaleItem extends Model
     ];
 
     // Relationship with Product
-    public function product()
-    {
-        return $this->belongsTo(Product::class, 'product_id');
-    }
+    
 
     // Relationship with Lot
     public function lot()
     {
         return $this->belongsTo(Lot::class, 'lot_id');
     }
-
+public function product()
+{
+    return $this->belongsTo(Product::class);
+}
     // Relationship with Sale
     public function sale()
     {

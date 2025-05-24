@@ -19,10 +19,6 @@ return new class extends Migration
             $table->foreignId('lot_id') ->references('id')
             ->on('lots')
             ->onDelete('cascade');
-            $table->foreignId('product_id')
-            ->references('id')
-            ->on('products')
-            ->onDelete('cascade');
             $table->integer('quantity');
             $table->decimal('original_price', 10, 2);
             $table->decimal('final_price', 10, 2);

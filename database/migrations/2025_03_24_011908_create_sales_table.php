@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('sales', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('sale_session_id')->nullable();
-            $table->unsignedBigInteger('prescription_id')->nullable(); // Add prescription_id column
+            $table->unsignedBigInteger('prescription_id')->nullable();
             $table->enum('type', ['normal', 'insurance',"prescription"])->default('normal');
             $table->enum('status', ['pending', 'completed', 'cancelled'])->default('pending'); 
             $table->decimal('total_amount', 10, 2);
