@@ -21,6 +21,22 @@
                 <span class="text-red-500 text-xs italic mt-1">{{ $message }}</span>
             @enderror
         </div>
+        <div class="mb-5">
+            <label class="block text-gray-700 text-sm font-medium mb-2" for="new_password">Nouveau mot de passe (laisser vide pour ne pas changer)</label>
+            <input type="password" name="new_password" id="new_password"
+                   class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 @error('new_password') border-red-500 @enderror">
+            @error('new_password')
+                <span class="text-red-500 text-xs italic mt-1">{{ $message }}</span>
+            @enderror
+        </div>
+        <div class="mb-5">
+            <label class="block text-gray-700 text-sm font-medium mb-2" for="admin_password">Votre mot de passe (requis pour changer le mot de passe de l'utilisateur)</label>
+            <input type="password" name="admin_password" id="admin_password"
+                   class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 @error('admin_password') border-red-500 @enderror">
+            @error('admin_password')
+                <span class="text-red-500 text-xs italic mt-1">{{ $message }}</span>
+            @enderror
+        </div>
         <div class="mb-6">
             <label class="block text-gray-700 text-sm font-medium mb-2" for="role">Rôle</label>
             <select name="role" id="role"

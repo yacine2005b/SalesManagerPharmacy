@@ -40,7 +40,7 @@ Route::get('/products/search', [ProductController::class, 'search'])->name('prod
 });
 
 // Routes for sales and POS (cashier role)
-Route::middleware('role:cashier,admin')->group(function () {
+Route::middleware('role:cashier,admin,pharmacist')->group(function () {
     Route::post('/cart/smart-add', [CartController::class, 'smartAdd'])->name('cart.smartAdd');
     Route::post('/cart/add', [CartController::class, 'addToCart'])->name('cart.add');
     Route::post('/cart/update', [CartController::class, 'updateCart'])->name('cart.update');
@@ -71,6 +71,7 @@ Route::middleware('role:admin')->group(function () {
     Route::get('/admin/logs', [ActivitylogController::class, 'index'])->name('admin.activityLog');
     Route::get('/admin/users/create', [UserManagementController::class, 'create'])->name('admin.users.create');
     Route::post('/admin/users', [UserManagementController::class, 'store'])->name('admin.users.store');
+    Route::get('/products/search', [PerscriptionController::class, 'search'])->name('products.search');
     Route::get('/admin/users/{user}/edit', [UserManagementController::class, 'edit'])->name('admin.users.edit');
     Route::put('/admin/users/{user}', [UserManagementController::class, 'update'])->name('admin.users.update');
     Route::delete('/admin/users/{user}', [UserManagementController::class, 'destroy'])->name('admin.users.destroy');

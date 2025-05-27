@@ -11,8 +11,14 @@
                 class="block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md shadow-sm"
                 {{ isset($shifaCard) ? 'disabled' : '' }}>
                 <option value="">Select coverage type</option>
-                <option value="full" {{ (isset($shifaCard) && $shifaCard->coverage_type === 'full') ? 'selected' : '' }}>Full Coverage</option>
-                <option value="partial" {{ (isset($shifaCard) && $shifaCard->coverage_type === 'partial') ? 'selected' : '' }}>Partial Coverage</option>
+                <option value="full"
+                    {{ (isset($shifaCard) && $shifaCard->coverage_type === 'full') || (session('coverage_type') === 'full' && !isset($shifaCard)) ? 'selected' : '' }}>
+                    Full Coverage
+                </option>
+                <option value="partial"
+                    {{ (isset($shifaCard) && $shifaCard->coverage_type === 'partial') || (session('coverage_type') === 'partial' && !isset($shifaCard)) ? 'selected' : '' }}>
+                    Partial Coverage
+                </option>
             </select>
             @if(isset($shifaCard))
                 <input type="hidden" name="coverage_type" value="{{ $shifaCard->coverage_type }}">
@@ -23,7 +29,7 @@
         <div>
             <label for="shifa_card_number" class="block text-sm font-medium text-gray-700">Shifa Card Number</label>
             <input type="text" name="shifa_card_number" id="shifa_card_number"
-                   value="{{ isset($shifaCard) ? $shifaCard->card_number : '' }}"
+                   value="{{ isset($shifaCard) ? $shifaCard->card_number : old('shifa_card_number', session('shifa_card_number')) }}"
                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
                    {{ isset($shifaCard) ? 'readonly' : '' }}>
         </div>
@@ -32,7 +38,7 @@
         <div>
             <label for="issue_date" class="block text-sm font-medium text-gray-700">Issue Date</label>
             <input type="date" name="issue_date" id="issue_date"
-                   value="{{ isset($shifaCard) ? $shifaCard->issue_date : '' }}"
+                   value="{{ isset($shifaCard) ? $shifaCard->issue_date : old('issue_date', session('issue_date')) }}"
                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
                    {{ isset($shifaCard) ? 'readonly' : '' }}>
         </div>
@@ -41,7 +47,7 @@
         <div>
             <label for="expiry_date" class="block text-sm font-medium text-gray-700">Expiry Date</label>
             <input type="date" name="expiry_date" id="expiry_date"
-                   value="{{ isset($shifaCard) ? $shifaCard->expiry_date : '' }}"
+                   value="{{ isset($shifaCard) ? $shifaCard->expiry_date : old('expiry_date', session('expiry_date')) }}"
                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
                    {{ isset($shifaCard) ? 'readonly' : '' }}>
         </div>

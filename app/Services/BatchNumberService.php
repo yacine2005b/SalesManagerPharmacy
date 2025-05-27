@@ -8,15 +8,17 @@ use Carbon\Carbon;
 class BatchNumberService
 {
     /**
-     * Generate a unique batch number.
+     * Generate a unique, meaningful batch number and barcode.
      *
+     * @param string $productName
      * @return string
      */
-    public function generateBatchNumber()
+    public function generateBatchNumber($productName)
     {
-        $prefix = 'BATCH'; // Custom prefix
-        $timestamp = Carbon::now()->format('YmdHis'); // Current timestamp
-        $random = Str::random(4); // Random string for uniqueness
-        return "{$prefix}-{$timestamp}-{$random}";
+        // Sanitize product name: uppercase, underscores, no special chars
+        $sanitized = strtoupper(Str::slug($productName, '_'));
+        $date = Carbon::now()->format('Ymd'); // e.g. 20240525
+        $random = strtoupper(Str::random(4)); // e.g. AB12
+        return "{$sanitized}-{$date}-{$random}";
     }
 }

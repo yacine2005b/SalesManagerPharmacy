@@ -24,7 +24,7 @@
 </head>
 <body>
     <div class="barcode">
-        <img src="{{ $lot->barcode }}" alt="Barcode for {{ $lot->batch_number }}" class="h-32 w-auto">
+        <img src="{{ asset('storage/' . $lot->barcode) }}" alt="Barcode for {{ $lot->batch_number }}" class="h-32 w-auto">
     </div>
     <script>
         window.print();

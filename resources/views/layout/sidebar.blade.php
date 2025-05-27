@@ -28,7 +28,7 @@
             </li>
             @endif
 
-            @if(auth()->user()->role === 'admin' || auth()->user()->role === 'cashier')
+            @if(auth()->user()->role === 'admin' || auth()->user()->role === 'cashier' || auth()->user()->role === 'pharmacist')
             <li>
                 <a href="{{ route('pos.normal') }}" class="flex items-center px-4 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('pos.normal') ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
                     <!-- POS Icon -->

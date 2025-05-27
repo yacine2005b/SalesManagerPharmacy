@@ -18,39 +18,59 @@ class PosController extends Controller
     {
         $products = Product::with('lots')->get();
         $cart = session('cart', []);
-        $isInsuranceSale=false;
+        $isInsuranceSale = false;
 
-        // Retrieve the active sale session for the logged-in user
+        // Get the active session for the current user
         $activeSession = SaleSession::where('user_id', auth()->id())
-            ->whereNull('end_time') // Ensure the session is not ended
+            ->whereNull('end_time')
             ->latest()
             ->first();
 
-            
-
-        return view('pos', compact('products', 'cart', 'activeSession',"isInsuranceSale"));
+        return view('pos', compact('products', 'cart', 'activeSession', 'isInsuranceSale'));
     }
 
     public function insuranceSale()
     {
-        // Set isInsuranceSale in the session
-        session(['is_insurance' => true]);
-
         $cart = session('cart', []);
-        $prescriptions = Prescription::where('status', 'pending')->get(); // Only pending prescriptions
+        $prescriptions = Prescription::where('status', 'pending')->get();
         $isInsuranceSale = true;
+        $activeSession = SaleSession::where('user_id', auth()->id())
+            ->whereNull('end_time')
+            ->latest()
+            ->first();
 
-        return view('pos.insuranceSale', compact('cart', 'prescriptions', 'isInsuranceSale'));
+        // Get the current prescription from session
+        $currentPrescription = null;
+        $shifaCard = null;
+        if (session('current_prescription')) {
+            $currentPrescription = Prescription::with('patient.shifaCard')
+                ->find(session('current_prescription')['id']);
+            if ($currentPrescription && $currentPrescription->patient) {
+                $shifaCard = $currentPrescription->patient->shifaCard;
+            }
+        }
+
+        return view('pos.insuranceSale', compact(
+            'cart',
+            'prescriptions',
+            'isInsuranceSale',
+            'activeSession',
+            'shifaCard'
+        ));
     }
 
     public function prescriptionSale()
     {
-        // Fetch pending prescriptions
         $prescriptions = Prescription::where('status', 'pending')->get();
         $cart = session('cart', []);
-        $isInsuranceSale=false;
-        
-        return view('pos.prescription', compact('prescriptions', 'cart',"isInsuranceSale"));
+        $isInsuranceSale = false;
+
+        $activeSession = SaleSession::where('user_id', auth()->id())
+            ->whereNull('end_time')
+            ->latest()
+            ->first();
+
+        return view('pos.prescription', compact('prescriptions', 'cart', 'isInsuranceSale', 'activeSession'));
     }
 
     public function checkout(Request $request)
@@ -68,12 +88,41 @@ class PosController extends Controller
             return redirect()->route('pos.prescription')->with('error', 'No active sale session found.');
         }
 
+        // --- NEW: Assign nearest-to-expiry lot if not set ---
+        foreach ($cart as &$item) {
+            if (empty($item['lot_id']) && !empty($item['product_id'])) {
+                $nearestLot = \App\Models\Lot::where('product_id', $item['product_id'])
+                    ->where('quantity', '>', 0)
+                    ->where('expiration_date', '>', now())
+                    ->orderBy('expiration_date', 'asc')
+                    ->first();
+                if ($nearestLot) {
+                    $item['lot_id'] = $nearestLot->id;
+                    $item['price'] = $nearestLot->price;
+                }
+            }
+        }
+        unset($item);
+        // Save the updated cart back to the session
+        session(['cart' => $cart]);
+        // --- END NEW ---
+
         // Calculate total amounts
         $totalAmount = collect($cart)->sum(function ($item) {
             return $item['price'] * $item['quantity'];
         });
 
         $isInsuranceSale = $request->input('is_insurance', false);
+        $prescriptionId = session('prescription_id');
+
+        // Correct sale type logic
+        if ($isInsuranceSale) {
+            $saleType = 'insurance';
+        } elseif ($prescriptionId) {
+            $saleType = 'prescription';
+        } else {
+            $saleType = 'normal';
+        }
 
         // --- SHIFA CARD LOGIC ---
         if ($isInsuranceSale && $prescriptionId) {
@@ -113,9 +162,6 @@ class PosController extends Controller
 
         $patientPays = $totalAmount - $coveredAmount;
 
-        // Determine the sale type
-        $saleType = $prescriptionId ? 'prescription' : ($isInsuranceSale ? 'insurance' : 'normal');
-
         // Create a new sale record
         $sale = Sale::create([ 
             'sale_session_id' => $activeSession->id,
@@ -142,20 +188,20 @@ class PosController extends Controller
             // Update the lot quantity
             $lot = Lot::find($item['lot_id']);
             if ($lot) {
-                $lot->quantity -= $item['quantity'];
+                $lot->quantity = max(0, $lot->quantity - $item['quantity']);
                 $lot->save();
             }
 
-            // Update the product quantity
+            // Update the product total quantity
             $product = Product::find($item['product_id']);
             if ($product) {
-                $product->total_quantity -= $item['quantity'];
+                $product->total_quantity = max(0, $product->total_quantity - $item['quantity']);
                 $product->save();
             }
         }
 
-        // Mark the prescription as processed if it's a prescription sale
-        if ($saleType === 'prescription' && $prescriptionId) {
+        // Mark the prescription as processed if there is a prescription
+        if ($prescriptionId) {
             $prescription = Prescription::find($prescriptionId);
             if ($prescription) {
                 $prescription->status = 'processed';
@@ -178,9 +224,9 @@ class PosController extends Controller
 
     public function loadPrescriptionToCart(Request $request)
     {
-        // Validate the prescription ID
         $request->validate([
             'prescription_id' => 'required|exists:prescriptions,id',
+            'sale_type' => 'required|in:insurance,prescription',
         ]);
 
         // Fetch the prescription with its medications and related products
@@ -198,7 +244,12 @@ class PosController extends Controller
         $cart = [];
         foreach ($prescription->medications as $medication) {
             $product = $medication->product;
-            $lot = $product->lots->first();
+            // Choose the closest to expiration (soonest) valid lot
+            $lot = $product->lots
+                ->where('quantity', '>', 0)
+                ->where('expiration_date', '>', now())
+                ->sortBy('expiration_date')
+                ->first();
             $price = $lot ? $lot->price : 0;
 
             // Calculate discount based on coverage type and reimbursable status
@@ -206,9 +257,9 @@ class PosController extends Controller
             if ($product->remboursable && session('is_insurance', false)) {
                 $coverageType = session('coverage_type', null);
                 if ($coverageType === 'full') {
-                    $discount = $price * $medication->quantity; // Full coverage means 100% discount
+                    $discount = $price * $medication->quantity;
                 } elseif ($coverageType === 'partial') {
-                    $discount = ($price * $medication->quantity) * 0.5; // Partial coverage means 50% discount
+                    $discount = ($price * $medication->quantity) * 0.8;
                 }
             }
 
@@ -231,18 +282,14 @@ class PosController extends Controller
                 'doctor_name' => $prescription->doctor->name,
                 'patient_name' => $prescription->patient->name,
             ],
-            'prescription_id' => $prescription->id, // Save prescription ID for later use
+            'prescription_id' => $prescription->id,
         ]);
 
-        // Pass shifaCard to the view
-        $shifaCard = $prescription && $prescription->patient ? $prescription->patient->shifaCard : null;
-
-        // Pass $shifaCard to your insurance sale view
-        return view('pos.insuranceSale', [
-            'cart' => $cart,
-            'shifaCard' => $shifaCard,
-            'prescriptions' => Prescription::where('status', 'pending')->get(), // Only pending prescriptions
-            'isInsuranceSale' => true,
-        ]);
+        // Always redirect back to the same sale type page
+        if ($request->sale_type === 'insurance') {
+            return redirect()->route('pos.insurance')->with('success', 'Prescription loaded.');
+        } else {
+            return redirect()->route('pos.prescription')->with('success', 'Prescription loaded.');
+        }
     }
 }

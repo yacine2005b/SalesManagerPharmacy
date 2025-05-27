@@ -70,9 +70,22 @@ class UserManagementController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
             'role' => ['required', 'in:admin,pharmacist,cashier'],
+            'new_password' => ['nullable', 'string', 'min:8'],
+            'admin_password' => ['required_with:new_password', 'string'],
         ]);
 
-        $user->update($request->only('name', 'email', 'role'));
+        // If changing password, verify admin's password
+        if ($request->filled('new_password')) {
+            if (!\Hash::check($request->admin_password, auth()->user()->password)) {
+                return back()->withErrors(['admin_password' => 'Votre mot de passe est incorrect.'])->withInput();
+            }
+            $user->password = \Hash::make($request->new_password);
+        }
+
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->role = $request->role;
+        $user->save();
 
         return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
     }

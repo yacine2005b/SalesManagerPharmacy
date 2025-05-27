@@ -41,8 +41,11 @@ class LotController extends Controller
             'expiration_date' => 'required|date|after:today',
         ]);
 
-        // Generate batch number
-        $batchNumber = $this->batchNumberService->generateBatchNumber();
+        // Get the product
+        $product = Product::findOrFail($request->product_id);
+
+        // Generate batch number using product name
+        $batchNumber = $this->batchNumberService->generateBatchNumber($product->name);
 
         // Generate the barcode image using the API
         $barcodeUrl = "https://barcode.tec-it.com/barcode.ashx?data={$batchNumber}&code=Code128&dpi=96";
@@ -63,7 +66,6 @@ class LotController extends Controller
         ]);
 
         // Update the product's total quantity
-        $product = Product::findOrFail($request->product_id);
         $product->total_quantity += $request->quantity;
         $product->save();
 

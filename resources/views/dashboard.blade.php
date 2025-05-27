@@ -9,6 +9,7 @@
         <h1 class="text-2xl font-bold mb-4">Point of Sale</h1>
     
         <!-- Start Sale Session Button -->
+        
         @if(!$activeSession)
             <form action="{{ route('sales.session.start') }}" method="POST" class="mb-4">
                 @csrf

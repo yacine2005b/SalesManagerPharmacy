@@ -36,7 +36,7 @@ class CartController extends Controller
             if ($coverageType === 'full') {
                 $discount = $price * $quantity; // Full coverage means 100% discount
             } elseif ($coverageType === 'partial') {
-                $discount = ($price * $quantity) * 0.5; // Partial coverage means 50% discount
+                $discount = ($price * $quantity) * 0.8; // Partial coverage means 80% discount, patient pays 20%
             }
         }
 
@@ -91,7 +91,7 @@ class CartController extends Controller
                 if ($coverageType === 'full') {
                     $discount = $price * $quantity; // Full coverage means 100% discount
                 } elseif ($coverageType === 'partial') {
-                    $discount = ($price * $quantity) * 0.5; // Partial coverage means 50% discount
+                    $discount = ($price * $quantity) * 0.8; // Partial coverage means 80% discount, patient pays 20%
                 }
             }
 
@@ -135,16 +135,18 @@ class CartController extends Controller
 
     public function saveInsuranceData(Request $request)
     {
-        // Save insurance data in the session
+        // Save all insurance data in the session
         session([
             'coverage_type' => $request->input('coverage_type'),
             'shifa_card_number' => $request->input('shifa_card_number'),
+            'issue_date' => $request->input('issue_date'),
+            'expiry_date' => $request->input('expiry_date'),
         ]);
 
         // Recalculate discounts for all items in the cart
         $cart = session('cart', []);
         $coverageType = session('coverage_type', null);
-        $isInsuranceSale = true; // Assume insurance sale is active
+        $isInsuranceSale = true;
 
         foreach ($cart as &$item) {
             $product = Product::find($item['product_id']);
@@ -154,7 +156,7 @@ class CartController extends Controller
                 if ($coverageType === 'full') {
                     $discount = $item['price'] * $item['quantity']; // Full coverage means 100% discount
                 } elseif ($coverageType === 'partial') {
-                    $discount = ($item['price'] * $item['quantity']) * 0.5; // Partial coverage means 50% discount
+                    $discount = ($item['price'] * $item['quantity']) * 0.8; // Partial coverage means 80% discount, patient pays 20%
                 }
             }
 
@@ -190,7 +192,7 @@ class CartController extends Controller
                 if ($coverageType === 'full') {
                     $discount = $item['price'] * $item['quantity']; // Full coverage
                 } elseif ($coverageType === 'partial') {
-                    $discount = ($item['price'] * $item['quantity']) * 0.5; // Partial coverage
+                    $discount = ($item['price'] * $item['quantity']) * 0.8; // Partial coverage
                 }
             }
 
@@ -216,7 +218,7 @@ class CartController extends Controller
                 if ($coverageType === 'full') {
                     $discount = $item['price'] * $item['quantity']; // Full coverage means 100% discount
                 } elseif ($coverageType === 'partial') {
-                    $discount = ($item['price'] * $item['quantity']) * 0.5; // Partial coverage means 50% discount
+                    $discount = ($item['price'] * $item['quantity']) * 0.8; // Partial coverage means 80% discount, patient pays 20%
                 }
             }
 
@@ -235,11 +237,11 @@ class CartController extends Controller
             $product = $lot->product;
         } else {
             // Only find products that have at least one lot
-            $product = \App\Models\Product::where('name', 'ILIKE', "%$query%")
+            $product =Product::where('name', 'ILIKE', "%$query%")
                 ->whereHas('lots')
                 ->first();
             if (!$product) {
-                $lot = \App\Models\Lot::where('batch_number', $query)->first();
+                $lot = Lot::where('batch_number', $query)->first();
                 if ($lot) {
                     $product = $lot->product;
                 }

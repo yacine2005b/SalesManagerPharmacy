@@ -11,9 +11,9 @@
             <p><strong>Date:</strong> {{ $sale->created_at->format('M d, Y H:i') }}</p>
             <p><strong>Type:</strong> {{ ucfirst($sale->type) }}</p>
             <p><strong>Status:</strong> {{ ucfirst($sale->status) }}</p>
-            <p><strong>Total Amount:</strong> ${{ number_format($sale->total_amount, 2) }}</p>
-            <p><strong>Covered Amount:</strong> ${{ number_format($sale->covered_amount, 2) }}</p>
-            <p><strong>Patient Pays:</strong> ${{ number_format($sale->patient_pays, 2) }}</p>
+            <p><strong>Total Amount:</strong> {{ number_format($sale->total_amount, 2) }}DA</p>
+            <p><strong>Covered Amount:</strong> {{ number_format($sale->covered_amount, 2) }}DA</p>
+            <p><strong>Patient Pays:</strong> {{ number_format($sale->patient_pays, 2) }}DA</p>
         </div>
 
         <!-- Sale Items -->
@@ -32,8 +32,8 @@
                 <tr>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item->lot->product->name }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $item->quantity }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($item->original_price, 2) }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($item->quantity * $item->original_price, 2) }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ number_format($item->original_price, 2) }}DA</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ number_format($item->quantity * $item->original_price, 2) }}DA</td>
                 </tr>
                 @endforeach
             </tbody>

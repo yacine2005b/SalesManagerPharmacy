@@ -5,10 +5,11 @@
 
     <div class="container mx-auto p-6">
         {{-- Unified Input for Barcode, Name, or Batch --}}
-        @include('shared.smartSearch')
+       
 
-
-        @if ($activeSession)
+<div>
+  @if ($activeSession)
+   @include('shared.smartSearch')
             <div class="flex">
                 <!-- Cart -->
                 <div class="w-full">
@@ -31,6 +32,8 @@
                 </button>
             </form>
         @endif
+</div>
+      
     </div>
 
     <script>
