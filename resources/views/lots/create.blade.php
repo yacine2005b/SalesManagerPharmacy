@@ -63,10 +63,10 @@
                 
 
                 <!-- Expiration Date -->
-               
-                    <label for="expiration_date" class="block font-medium mb-2">Expiration Date</label>
-                    <input type="date" name="expiration_date" id="expiration_date" class="border border-gray-300 rounded p-2 w-full" required>
-               
+                <label for="expiration_date" class="block font-medium mb-2">Expiration Date</label>
+                <input type="date" name="expiration_date" id="expiration_date"
+                       class="border border-gray-300 rounded p-2 w-48"
+                       required min="{{ \Carbon\Carbon::today()->toDateString() }}">
 
                 <!-- Hidden Product ID -->
                 <input type="hidden" name="product_id" value="{{ $product->id }}">

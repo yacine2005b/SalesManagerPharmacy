@@ -40,6 +40,7 @@
             <input type="date" name="issue_date" id="issue_date"
                    value="{{ isset($shifaCard) ? $shifaCard->issue_date : old('issue_date', session('issue_date')) }}"
                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+                   max="{{ \Carbon\Carbon::today()->toDateString() }}"
                    {{ isset($shifaCard) ? 'readonly' : '' }}>
         </div>
 
@@ -49,6 +50,7 @@
             <input type="date" name="expiry_date" id="expiry_date"
                    value="{{ isset($shifaCard) ? $shifaCard->expiry_date : old('expiry_date', session('expiry_date')) }}"
                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+                   min="{{ \Carbon\Carbon::today()->toDateString() }}"
                    {{ isset($shifaCard) ? 'readonly' : '' }}>
         </div>
 

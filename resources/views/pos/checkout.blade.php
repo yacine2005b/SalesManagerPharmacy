@@ -86,18 +86,20 @@
             <!-- Checkout Button -->
             <form action="{{ route('checkout') }}" method="POST" class="w-full">
                 @csrf
-                  @if(isset($shifaCard))
-        <input type="hidden" name="coverage_type" value="{{ $shifaCard->coverage_type }}">
-        <input type="hidden" name="shifa_card_number" value="{{ $shifaCard->card_number }}">
-        <input type="hidden" name="issue_date" value="{{ $shifaCard->issue_date }}">
-        <input type="hidden" name="expiry_date" value="{{ $shifaCard->expiry_date }}">
-    @else
-        <input type="hidden" name="coverage_type" value="{{ session('coverage_type') }}">
-        <input type="hidden" name="shifa_card_number" value="{{ session('shifa_card_number') }}">
-        <input type="hidden" name="issue_date" value="{{ session('issue_date') }}">
-        <input type="hidden" name="expiry_date" value="{{ session('expiry_date') }}">
-    @endif
-    <input type="hidden" name="is_insurance" value="1">
+                @if($isInsuranceSale ?? false)
+                    @if(isset($shifaCard))
+                        <input type="hidden" name="coverage_type" value="{{ $shifaCard->coverage_type }}">
+                        <input type="hidden" name="shifa_card_number" value="{{ $shifaCard->card_number }}">
+                        <input type="hidden" name="issue_date" value="{{ $shifaCard->issue_date }}">
+                        <input type="hidden" name="expiry_date" value="{{ $shifaCard->expiry_date }}">
+                    @else
+                        <input type="hidden" name="coverage_type" value="{{ session('coverage_type') }}">
+                        <input type="hidden" name="shifa_card_number" value="{{ session('shifa_card_number') }}">
+                        <input type="hidden" name="issue_date" value="{{ session('issue_date') }}">
+                        <input type="hidden" name="expiry_date" value="{{ session('expiry_date') }}">
+                    @endif
+                    <input type="hidden" name="is_insurance" value="1">
+                @endif
                 <button type="submit" class="w-full py-3 px-6 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md shadow-sm flex items-center justify-center">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>

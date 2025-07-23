@@ -10,12 +10,18 @@ use App\Models\Lot;
 use App\Models\SaleSession;
 use App\Models\ActivityLog;
 use App\Models\Prescription;
-use App\Models\ShifaCard; // Add at the top if not already imported
+use App\Models\ShifaCard;
+use App\Strategies\SaleContext;
+use App\Strategies\NormalSaleStrategy;
+use App\Strategies\PrescriptionSaleStrategy;
+use App\Strategies\InsuranceSaleStrategy;
 
 class PosController extends Controller
 {
     public function index()
     {
+      
+
         $products = Product::with('lots')->get();
         $cart = session('cart', []);
         $isInsuranceSale = false;
@@ -31,6 +37,8 @@ class PosController extends Controller
 
     public function insuranceSale()
     {
+       
+
         $cart = session('cart', []);
         $prescriptions = Prescription::where('status', 'pending')->get();
         $isInsuranceSale = true;
@@ -61,10 +69,11 @@ class PosController extends Controller
 
     public function prescriptionSale()
     {
+      
+
         $prescriptions = Prescription::where('status', 'pending')->get();
         $cart = session('cart', []);
         $isInsuranceSale = false;
-
         $activeSession = SaleSession::where('user_id', auth()->id())
             ->whereNull('end_time')
             ->latest()
@@ -76,150 +85,45 @@ class PosController extends Controller
     public function checkout(Request $request)
     {
         $cart = session('cart', []);
-        $prescriptionId = session('prescription_id'); // Retrieve prescription ID from the session
-
-        if (empty($cart)) {
-            return redirect()->route('pos.prescription')->with('error', 'Cart is empty.');
-        }
-
-        // Get the active sale session
-        $activeSession = SaleSession::where('user_id', auth()->id())->whereNull('end_time')->first();
-        if (!$activeSession) {
-            return redirect()->route('pos.prescription')->with('error', 'No active sale session found.');
-        }
-
-        // --- NEW: Assign nearest-to-expiry lot if not set ---
-        foreach ($cart as &$item) {
-            if (empty($item['lot_id']) && !empty($item['product_id'])) {
-                $nearestLot = \App\Models\Lot::where('product_id', $item['product_id'])
-                    ->where('quantity', '>', 0)
-                    ->where('expiration_date', '>', now())
-                    ->orderBy('expiration_date', 'asc')
-                    ->first();
-                if ($nearestLot) {
-                    $item['lot_id'] = $nearestLot->id;
-                    $item['price'] = $nearestLot->price;
-                }
-            }
-        }
-        unset($item);
-        // Save the updated cart back to the session
-        session(['cart' => $cart]);
-        // --- END NEW ---
-
-        // Calculate total amounts
-        $totalAmount = collect($cart)->sum(function ($item) {
-            return $item['price'] * $item['quantity'];
-        });
-
-        $isInsuranceSale = $request->input('is_insurance', false);
         $prescriptionId = session('prescription_id');
+        $activeSession = SaleSession::where('user_id', auth()->id())->whereNull('end_time')->first();
 
-        // Correct sale type logic
+        // Choose strategy
+        $isInsuranceSale = $request->input('is_insurance', false);
         if ($isInsuranceSale) {
-            $saleType = 'insurance';
+            $strategy = new InsuranceSaleStrategy();
         } elseif ($prescriptionId) {
-            $saleType = 'prescription';
+            $strategy = new PrescriptionSaleStrategy();
         } else {
-            $saleType = 'normal';
+            $strategy = new NormalSaleStrategy();
         }
 
-        // --- SHIFA CARD LOGIC ---
-        if ($isInsuranceSale && $prescriptionId) {
-            $prescription = Prescription::find($prescriptionId);
-            if ($prescription && $prescription->patient) {
-                $patient = $prescription->patient;
-                // Only create if patient does not already have a Shifa Card
-                if (!$patient->shifaCard) {
-                    $validated = $request->validate([
-                        'shifa_card_number' => 'required|string|max:50',
-                        'coverage_type' => 'required|in:full,partial',
-                        'issue_date' => 'nullable|date',
-                        'expiry_date' => 'nullable|date',
-                    ]);
-                    ShifaCard::create([
-                        'patient_id' => $patient->id,
-                        'card_number' => $validated['shifa_card_number'],
-                        'coverage_type' => $validated['coverage_type'],
-                        'issue_date' => $validated['issue_date'] ?? null,
-                        'expiry_date' => $validated['expiry_date'] ?? null,
-                    ]);
-                }
-            }
-        }
-        // --- END SHIFA CARD LOGIC ---
+        // Delegate all sale logic to the strategy
+        $saleData = $strategy->processSale($cart, $request, $activeSession);
 
-        $coveredAmount = 0;
-        if ($isInsuranceSale) {
-            // Calculate covered amount only for reimbursable items
-            $coveredAmount = collect($cart)->sum(function ($item) {
-                if ($item['is_reimbursable'] ?? false) {
-                    return $item['discount'] ?? 0;
-                }
-                return 0;
-            });
+        // Create sale and sale items from $saleData
+        $sale = Sale::create($saleData['sale']);
+        foreach ($saleData['items'] as $item) {
+            SaleItem::create($item + ['sale_id' => $sale->id]);
         }
 
-        $patientPays = $totalAmount - $coveredAmount;
-
-        // Create a new sale record
-        $sale = Sale::create([ 
-            'sale_session_id' => $activeSession->id,
-            'type' => $saleType,
-            'prescription_id' => $prescriptionId,
-            'coverage_type' => $isInsuranceSale ? session('coverage_type') : null,
-            'total_amount' => $totalAmount,
-            'covered_amount' => $coveredAmount,
-            'patient_pays' => $patientPays,
-            'status' => 'completed',
-        ]);
-
-        // Create sale items and update lot quantities
-        foreach ($cart as $item) {
-            SaleItem::create([
-                'sale_id' => $sale->id,
-                'product_id' => $item['product_id'],
-                'lot_id' => $item['lot_id'],
-                'quantity' => $item['quantity'],
-                'original_price' => $item['price'],
-                'final_price' => $item['price'] - $item['discount'],
-            ]);
-
-            // Update the lot quantity
-            $lot = Lot::find($item['lot_id']);
-            if ($lot) {
-                $lot->quantity = max(0, $lot->quantity - $item['quantity']);
-                $lot->save();
-            }
-
-            // Update the product total quantity
-            $product = Product::find($item['product_id']);
-            if ($product) {
-                $product->total_quantity = max(0, $product->total_quantity - $item['quantity']);
-                $product->save();
-            }
-        }
-
-        // Mark the prescription as processed if there is a prescription
-        if ($prescriptionId) {
-            $prescription = Prescription::find($prescriptionId);
-            if ($prescription) {
-                $prescription->status = 'processed';
-                $prescription->save();
-            }
-        }
-
-        // Log the activity
+        // Log activity
         ActivityLog::create([
             'user_id' => auth()->id(),
-            'action' => auth()->user()->name . ' completed a ' . $saleType . ' sale with total amount: ' . $totalAmount . '.',
+            'action' => auth()->user()->name . ' completed a ' . $saleData['sale']['type'] . ' sale with total amount: ' . $saleData['sale']['total_amount'] . '.',
         ]);
 
-        // Clear the cart and prescription ID from the session
+        // Clear the cart and prescription session data
         session()->forget(['cart', 'prescription_id', 'current_prescription']);
 
-        return redirect()->route($saleType === 'insurance' ? 'pos.insurance' : ($saleType === 'prescription' ? 'pos.prescription' : 'pos.normal'))
-            ->with('success', ucfirst($saleType) . ' sale completed successfully!');
+        // Redirect based on sale type
+        if ($saleData['sale']['type'] === 'insurance') {
+            return redirect()->route('pos.insurance')->with('success', 'Insurance sale completed successfully!');
+        } elseif ($saleData['sale']['type'] === 'prescription') {
+            return redirect()->route('pos.prescription')->with('success', 'Prescription sale completed successfully!');
+        } else {
+            return redirect()->route('pos.normal')->with('success', 'Normal sale completed successfully!');
+        }
     }
 
     public function loadPrescriptionToCart(Request $request)
@@ -292,4 +196,19 @@ class PosController extends Controller
             return redirect()->route('pos.prescription')->with('success', 'Prescription loaded.');
         }
     }
+
+    public function switchSaleType(Request $request)
+{
+    // Clear cart and prescription session data
+    session()->forget(['cart', 'prescription_id', 'current_prescription']);
+
+    $saleType = $request->input('sale_type'); // 'normal', 'insurance', or 'prescription'
+    if ($saleType === 'insurance') {
+        return redirect()->route('pos.insurance');
+    } elseif ($saleType === 'prescription') {
+        return redirect()->route('pos.prescription');
+    } else {
+        return redirect()->route('pos.normal');
+    }
+}
 }

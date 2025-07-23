@@ -46,7 +46,7 @@ class ProductController extends Controller
         $product->dosage_unit = $request->dosage_unit;
         $product->remboursable = $request->has('remboursable');
         $product->total_quantity = $request->total_quantity;
-        $product->prescription = $request->has('prescription');
+        $product->prescription = $request->input('prescription', 0) ? 1 : 0;
         $product->save();
 
         // Log the activity

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Models\Lot;
 
 class CartController extends Controller
 {
@@ -16,9 +17,16 @@ class CartController extends Controller
         $price = $request->input('price');
         $quantity = $request->input('quantity', 1);
 
-        // Fetch the product to check if it is reimbursable
+        // Fetch the product to check if it is reimbursable and prescription-only
         $product = Product::find($productId);
         $isReimbursable = $product ? $product->remboursable : false;
+        $isPrescription = $product ? $product->prescription : false;
+
+        // Check for normal sale and prescription-only product
+        $isInsuranceSale = $request->input('is_insurance', false) || session('is_insurance', false);
+        if (!$isInsuranceSale && $isPrescription) {
+            return redirect()->back()->with('error', 'Prescription-only products cannot be added in a normal sale.');
+        }
 
         // Save insurance data in the session
         $coverageType = $request->input('coverage_type', session('coverage_type', null));
@@ -30,7 +38,6 @@ class CartController extends Controller
         ]);
 
         // Calculate discount based on coverage type and reimbursable status
-        $isInsuranceSale = $request->input('is_insurance', false);
         $discount = 0;
         if ($isReimbursable && $isInsuranceSale) { // Ensure discount is only calculated for insurance sales
             if ($coverageType === 'full') {
@@ -237,7 +244,7 @@ class CartController extends Controller
             $product = $lot->product;
         } else {
             // Only find products that have at least one lot
-            $product =Product::where('name', 'ILIKE', "%$query%")
+            $product = Product::where('name', 'ILIKE', "%$query%")
                 ->whereHas('lots')
                 ->first();
             if (!$product) {
@@ -255,6 +262,12 @@ class CartController extends Controller
         // If found by lot, use that lot; otherwise, use the first lot of the product (if any)
         if (empty($lot) && isset($product)) {
             $lot = $product->lots()->first();
+        }
+
+        // Prevent prescription-only products in normal sale
+        $isInsuranceSale = $request->input('is_insurance', false) || session('is_insurance', false);
+        if (!$isInsuranceSale && $product->prescription) {
+            return redirect()->back()->with('error', 'Prescription-only products cannot be added in a normal sale.');
         }
 
         // Add to cart logic with duplicate check

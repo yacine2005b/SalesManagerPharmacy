@@ -6,6 +6,7 @@
             <p class="text-gray-600"><span class="font-medium">Dosage:</span> {{ $product->dosage }} {{ $product->dosage_unit }}</p>
             <p class="text-gray-600"><span class="font-medium">Low Stock Threshold:</span> {{ $product->low_stock_threshold }} units</p>
             <p class="text-gray-600"><span class="font-medium">Remboursable:</span> {{ $product->remboursable ? 'Yes' : 'No' }}</p>
+            <p class="text-gray-600"><span class="font-medium">Prescription Required:</span> {{ $product->prescription ? 'Yes' : 'No' }}</p>
         </div>
     </div>
     <div>

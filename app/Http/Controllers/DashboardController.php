@@ -24,12 +24,49 @@ class DashboardController extends Controller
             $totalTransactions = Sale::where('sale_session_id', $activeSession->id)->count();
         }
 
+        // =========================
+        // Chart Data for This Month
+        // =========================
+        $start = now()->startOfMonth();
+        $end = now()->endOfMonth();
+
+        // Sessions per day
+        $sessions = SaleSession::whereBetween('start_time', [$start, $end])
+            ->selectRaw('DATE(start_time) as date, COUNT(*) as session_count')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get()
+            ->keyBy('date');
+
+        // Sales per day
+        $sales = Sale::whereBetween('created_at', [$start, $end])
+            ->selectRaw('DATE(created_at) as date, SUM(total_amount) as total_money')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get()
+            ->keyBy('date');
+
+        // Build labels and datasets for all days in the month
+        $labels = [];
+        $sessionCounts = [];
+        $moneyTotals = [];
+        $period = \Carbon\CarbonPeriod::create($start, $end);
+        foreach ($period as $date) {
+            $d = $date->format('Y-m-d');
+            $labels[] = $d;
+            $sessionCounts[] = isset($sessions[$d]) ? $sessions[$d]->session_count : 0;
+            $moneyTotals[] = isset($sales[$d]) ? (float)$sales[$d]->total_money : 0;
+        }
+
         return view('welcome', compact(
             'activeSession', 
             'totalSalesToday', 
             'totalTransactions', 
             'activeSessionsCount', 
-            'recentTransactions'
+            'recentTransactions',
+            'labels',
+            'sessionCounts',
+            'moneyTotals'
         ));
     }
 }
