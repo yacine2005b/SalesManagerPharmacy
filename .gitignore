@@ -22,3 +22,7 @@ yarn-error.log
 /.vscode
 /.zed
 .env.example
+.dockerignore
+.editorconfig
+.gitattributes
+.gitignore
