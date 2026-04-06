@@ -25,7 +25,7 @@ yarn-error.log
 .dockerignore
 .editorconfig
 .gitattributes
-.gitignore
+
 compose.yaml
 dockerfile
 package.json
