@@ -17,7 +17,7 @@ use App\Http\Controllers\{
 };
 
 // Public Route
-Route::get("/", [DashboardController::class, "index"])->name('welcome');
+Route::get("/", [DashboardController::class, "index"])->name('welcome')->middleware('auth');
 
 // =============================
 // Inventory Routes (Pharmacist & Admin)
@@ -25,6 +25,7 @@ Route::get("/", [DashboardController::class, "index"])->name('welcome');
 Route::middleware('role:pharmacist,admin')->group(function () {
 
     // Products
+        Route::get('/inventory/search', [ProductController::class, 'search'])->name('inventory.search');
     Route::get('/inventory', [ProductController::class, 'index'])->name('inventory.index');
     Route::post('/inventory/add', [ProductController::class, 'store'])->name('product.store');
     Route::get('/inventory/{product}', [ProductController::class, 'show'])->name('product.show');
@@ -33,7 +34,7 @@ Route::middleware('role:pharmacist,admin')->group(function () {
     Route::delete('/inventory/{product}', [ProductController::class, 'destroy'])->name('product.destroy');
 
     // Product search
-    Route::get('/inventory/search', [ProductController::class, 'search'])->name('inventory.search');
+
     Route::get('/inventory/clear-search', [ProductController::class, 'clearSearch'])->name('inventory.clearSearch');
 
     // Lots

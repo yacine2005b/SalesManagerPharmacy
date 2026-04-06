@@ -17,7 +17,7 @@ class SaleController extends Controller
 
     public function index()
     {
-        // Fetch all sale sessions with their associated user
+      
         $saleSessions = SaleSession::with('user')->latest()->get();
     
         return view('salesHistory', compact('saleSessions'));
@@ -25,7 +25,7 @@ class SaleController extends Controller
     
     public function saleDetails(SaleSession $saleSession)
     {
-        // Fetch all sales associated with the given session
+      
         $sales = $saleSession->sales()->with('saleItems')->get();
     
         return view('sales.details', compact('saleSession', 'sales'));

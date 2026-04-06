@@ -102,14 +102,19 @@ class PerscriptionController extends Controller
 
         return redirect()->route('prescription.index')->with('success', 'Prescription deleted successfully.');
     }
-    public function search(Request $request)
+public function search(Request $request)
 {
     $query = $request->input('q');
-    $products = \App\Models\Product::where('name', 'LIKE', "%$query%")
+
+    $products = Product::where('name', 'LIKE', "%$query%")
         ->where('total_quantity', '>', 0)
+        ->whereHas('lots', function ($q) {
+            $q->where('expiration_date', '>', now());
+        })
         ->limit(10)
         ->get(['id', 'name']);
 
     return response()->json($products);
 }
+
 }

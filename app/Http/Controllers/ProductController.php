@@ -5,24 +5,28 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\models\ActivityLog;
+use App\Services\ProductAlertService;
 
 class ProductController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, ProductAlertService $alertService)
     {
-        // Check if session has a search query
         $search = session('product_search', null);
+        $alerts = $alertService->getAlerts();
+
+        $products = collect(); // Empty collection by default
 
         if ($search) {
-            $products = Product::where('name', 'LIKE', "%$search%")
-                ->orWhere('description', 'LIKE', "%$search%")
+            $products = Product::where('name', 'ILIKE', "%$search%")
+                ->orWhere('description', 'ILIKE', "%$search%")
+                ->orWhereHas('lots', function ($q) use ($search) {
+                    $q->where('barcode', $search);
+                })
                 ->get();
-        } else {
-            $products = Product::all();
         }
 
         $lowStockProducts = Product::whereColumn('total_quantity', '<=', 'low_stock_threshold')->get();
-        return view('inventory', compact('products', 'lowStockProducts', 'search'));
+        return view('inventory', compact('products', 'lowStockProducts', 'search', 'alerts'));
     }
 
     public function store(Request $request)

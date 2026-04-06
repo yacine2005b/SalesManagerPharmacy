@@ -51,23 +51,31 @@
                 @csrf
 
                 <!-- Quantity -->
-                
-                    <label for="quantity" class="block font-medium mb-2">Quantity</label>
+              <label for="quantity" class="block font-medium mb-2">Quantity</label>
                     <input type="number" name="quantity" id="quantity" class="border border-gray-300 rounded p-2 w-full" placeholder="Enter quantity" required>
-                
+                @error('quantity')
+                    <span class="text-red-500 text-sm">{{ $message }}</span>
+    
+@enderror
 
                 <!-- Price -->
                 
                     <label for="price" class="block font-medium mb-2">Price</label>
                     <input type="number" step="0.01" name="price" id="price" class="border border-gray-300 rounded p-2 w-full" placeholder="Enter price" required>
-                
+                @error('price')
+                    <span class="text-red-500 text-sm">{{ $message }}</span>
+    
+@enderror
 
                 <!-- Expiration Date -->
                 <label for="expiration_date" class="block font-medium mb-2">Expiration Date</label>
                 <input type="date" name="expiration_date" id="expiration_date"
                        class="border border-gray-300 rounded p-2 w-48"
                        required min="{{ \Carbon\Carbon::today()->toDateString() }}">
-
+@error('expiration_date')
+                    <p class="text-red-500 text-sm">{{ $message }}</p>
+    
+@enderror
                 <!-- Hidden Product ID -->
                 <input type="hidden" name="product_id" value="{{ $product->id }}">
 

@@ -10,6 +10,7 @@ use App\Models\ActivityLog;
 use Picqer\Barcode\BarcodeGeneratorPNG;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Http\Requests\StoreLotRequest;
 
 class LotController extends Controller
 {
@@ -32,14 +33,9 @@ class LotController extends Controller
     /**
      * Store a new lot for a product.
      */
-    public function store(Request $request)
+    public function store(StoreLotRequest $request)
     {
-        $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'quantity' => 'required|integer|min:1',
-            'price' => 'required|numeric|min:0',
-            'expiration_date' => 'required|date|after:today',
-        ]);
+  
 
         // Get the product
         $product = Product::findOrFail($request->product_id);
@@ -89,14 +85,9 @@ class LotController extends Controller
     /**
      * Update a lot.
      */
-    public function updateLot(Request $request, Lot $lot)
+    public function updateLot(StoreLotRequest $request, Lot $lot)
     {
-        $validated = $request->validate([
-            'batch_number' => 'required|string|max:255',
-            'quantity' => 'required|integer|min:0',
-            'expiration_date' => 'required|date',
-            'price' => 'required|numeric|min:0',
-        ]);
+      
 
         // Calculate the difference in quantity
         $oldQuantity = $lot->quantity;

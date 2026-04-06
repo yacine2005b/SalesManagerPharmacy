@@ -33,7 +33,7 @@ class SaleSessionController extends Controller
     }
     public function endSession(SaleSession $session)
 {
-    // Ensure the session belongs to the logged-in user
+    // Ensure the session belongs to the loggedin user
     if ($session->user_id !== auth()->id()) {
         abort(403, 'Unauthorized action.');
     }

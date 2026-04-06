@@ -42,6 +42,9 @@
                     </div>
                     <p class="mt-1 text-xs text-gray-500">Low stock threshold: {{ $lot->product->low_stock_threshold }} units</p>
                 </div>
+                @error('quantity')
+                    <span class="text-red-500 text-sm">{{ $message }}</span>   
+@enderror
             </div>
 
             <!-- Right Column -->
@@ -52,6 +55,9 @@
                     <input type="date" name="expiration_date" id="expiration_date" value="{{ $lot->expiration_date }}"
                            class="block w-full px-4 py-2 bg-white border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                            required>
+                           @error('expiration_date')
+                                <span class="text-red-500 text-sm">{{ $message }}</span>   
+                           @enderror
                     @if($lot->expiration_date < now())
                     <p class="mt-1 text-xs text-red-600">This lot has expired</p>
                     @endif
@@ -71,6 +77,10 @@
                     <span class="text-gray-500 text-sm">DA</span>
                 </div>
             </div>
+            @error('price')
+                <span class="text-red-500 text-sm">{{ $message }}</span>
+                
+            @enderror
         </div>
 
         <!-- Form Actions -->

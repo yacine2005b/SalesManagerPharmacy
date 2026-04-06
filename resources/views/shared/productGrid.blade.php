@@ -6,7 +6,7 @@
                 <h3 class="text-lg font-semibold text-gray-800 text-center mb-2">{{ $product->name }}</h3>
                 <p class="text-gray-500 text-sm text-center line-clamp-2">{{ $product->description }}</p>
             </div>
-            <!-- Actions Dropdown ... (copy from your main card) -->
+           
         </div>
     @empty
         <div class="col-span-4 text-center text-gray-500">No products found.</div>
