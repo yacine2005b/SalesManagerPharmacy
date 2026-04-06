@@ -19,10 +19,14 @@ yarn-error.log
 /.fleet
 /.idea
 /.nova
-/.vscode
+/.vscod
 /.zed
 .env.example
 .dockerignore
 .editorconfig
 .gitattributes
 .gitignore
+compose.yaml
+dockerfile
+package.json
+package-lock.json
