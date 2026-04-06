@@ -19,7 +19,7 @@ yarn-error.log
 /.fleet
 /.idea
 /.nova
-/.vscod
+/.vscode/
 /.zed
 .env.example
 .dockerignore
@@ -27,6 +27,6 @@ yarn-error.log
 .gitattributes
 
 compose.yaml
-dockerfile
+/Dockerfile
 package.json
 package-lock.json
